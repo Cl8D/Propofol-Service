@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-// 회원 정보 조회 시 사용하는 Dto
+// 회원 정보 조회 Dto
 @Data
 @NoArgsConstructor
 // 없는 필드에 대해서는 json 생성 x

@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Date;
 
-// 회원 가입 시 사용되는 dto
+// 회원가입 Dto
 @Data
 @NoArgsConstructor
 public class SaveMemberDto {
