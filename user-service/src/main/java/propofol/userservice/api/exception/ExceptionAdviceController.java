@@ -12,6 +12,7 @@ import propofol.userservice.domain.exception.NotFoundMember;
 
 import javax.validation.ConstraintViolationException;
 
+// 자체 Exception 처리
 @RestControllerAdvice
 @Slf4j
 public class ExceptionAdviceController {
