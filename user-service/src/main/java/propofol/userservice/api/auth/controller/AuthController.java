@@ -11,6 +11,7 @@ import propofol.userservice.api.auth.service.AuthService;
 
 import javax.servlet.http.HttpServletResponse;
 
+// 일반 로그인 관리
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
