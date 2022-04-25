@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
+// JWT 토큰 생성을 위한 Dto
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TokenDto {
