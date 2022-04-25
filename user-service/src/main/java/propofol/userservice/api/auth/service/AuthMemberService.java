@@ -49,7 +49,14 @@ public class AuthMemberService implements UserDetailsService {
         // UserDetails의 구현체인 user 객체를 리턴해줄 수 있다.
         // 이때 파라미터로 계정의 이름, 패스워드, 권한 목록을 리턴해준다.
         // 이때 권한을 넘겨줄 때 singleton으로 넘겨주면... 권한 객체 한 개만 넘겨줄 수 있다 (싱글톤)
-        return new User(findMember.getEmail(), findMember.getPassword(),
-                Collections.singleton(grantedAuthority));
+
+
+        // + 여기서 나중에 회원을 찾을 때 성능 이슈가 안 나게 하기 위해서
+        // 기존에는 member의 email 값을 user 객체에 넣어주었지만, db의 pk 값으로 변경하였다.
+        // 이러면 나중에 db에서 찾을 때 pk 값을 통해서 바로 찾아올 수가 있게 된다!
+//        return new User(findMember.getEmail(), findMember.getPassword(),
+//                Collections.singleton(grantedAuthority));
+        return new User(String.valueOf(findMember.getId()), findMember.getPassword(),
+                    Collections.singleton(grantedAuthority));
     }
 }
