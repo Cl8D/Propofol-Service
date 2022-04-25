@@ -1,0 +1,43 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: apigateway-service
+  config:
+    import: application-secret.yml
+  cloud:
+    gateway:
+      routes:
+        # user-service routing
+        # Jwt Filter Not Necessary (login, join)
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/api/v1/auth/**
+            - Method=POST
+          filters:
+              # Not using Cookie
+            - RemoveRequestHeader=Cookie
+              # Url Path : localhost:8080/user-service/api/v1 => localhost:8080/api/v1
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+
+
+        # Jwt Filter Necessary (etc...)
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - path=/user-service/api/v1/members/**
+            - Method=GET,POST,PUT,PATCH,DELETE
+          filters:
+            - RemoveRequestHeader=Cookie
+            - JwtFilter
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
