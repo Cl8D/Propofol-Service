@@ -10,8 +10,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import propofol.userservice.api.auth.controller.dto.LoginRequestDto;
-import propofol.userservice.api.exception.dto.ErrorDto;
-import propofol.userservice.api.jwt.JwtProvider;
+import propofol.userservice.api.common.exception.dto.ErrorDto;
+import propofol.userservice.api.common.jwt.JwtProvider;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -60,6 +60,11 @@ public class AuthService {
             // 패스워드가 일치하지 않을 때
             else if(e instanceof BadCredentialsException){
                 errorDto.setMessage("패스워드 오류!");
+                errorDto.setStatus(HttpStatus.BAD_REQUEST.value());
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            } else {
+                // 그 외의 다른 오류
+                errorDto.setMessage(e.getMessage());
                 errorDto.setStatus(HttpStatus.BAD_REQUEST.value());
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
