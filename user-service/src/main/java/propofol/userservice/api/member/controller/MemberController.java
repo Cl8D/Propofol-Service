@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+// 사용자가 진행할 수 있는 기능 컨트롤러
 @RestController
 @RequiredArgsConstructor
 @Slf4j
