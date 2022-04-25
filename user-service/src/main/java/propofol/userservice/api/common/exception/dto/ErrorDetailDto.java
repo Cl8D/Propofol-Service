@@ -1,4 +1,4 @@
-package propofol.userservice.api.exception.dto;
+package propofol.userservice.api.common.exception.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

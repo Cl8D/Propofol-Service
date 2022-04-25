@@ -1,4 +1,4 @@
-package propofol.userservice.api.exception.dto;
+package propofol.userservice.api.common.exception.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
