@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDate;
 
+// Member Entity
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
