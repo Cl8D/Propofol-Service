@@ -15,7 +15,7 @@ import propofol.userservice.api.jwt.JwtProvider;
 
 import javax.servlet.http.HttpServletResponse;
 
-// 로그인 시 검증 및 Jwt 토큰 반환
+// 로그인한 사용자 검증 및 Jwt 토큰 반환
 @Service
 @Slf4j
 @RequiredArgsConstructor

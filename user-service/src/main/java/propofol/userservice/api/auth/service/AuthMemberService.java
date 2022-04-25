@@ -15,7 +15,7 @@ import propofol.userservice.domain.member.service.MemberService;
 
 import java.util.Collections;
 
-// 로그인 요청을 한 사용자의 권한을 확인한다.
+// 로그인 요청을 한 멤버 권한 확인
 @Service
 @RequiredArgsConstructor
 @Slf4j
