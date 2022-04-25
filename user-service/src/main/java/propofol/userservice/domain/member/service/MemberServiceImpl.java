@@ -7,6 +7,7 @@ import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.repository.MemberRepository;
 
+// Member Service 구현체
 @Service
 @RequiredArgsConstructor
 @Slf4j

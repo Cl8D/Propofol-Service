@@ -5,6 +5,7 @@ import propofol.userservice.domain.member.entity.Member;
 
 import java.util.Optional;
 
+// Member Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
     // 이메일을 통해 멤버 조회
     Optional<Member> findByEmail(String email);

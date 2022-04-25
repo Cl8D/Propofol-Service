@@ -2,6 +2,7 @@ package propofol.userservice.domain.member.service;
 
 import propofol.userservice.domain.member.entity.Member;
 
+// Member Service
 public interface MemberService {
     // 이메일을 통해 멤버 조회
     Member getMemberByEmail(String email);
