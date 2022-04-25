@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+// Spring Security 설정
 @Configuration
 // 스프링 시큐리티 필터가 스프링 필터 체인에 등록된다.
 @EnableWebSecurity
