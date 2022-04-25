@@ -7,6 +7,8 @@ import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.repository.MemberRepository;
 
+import java.util.Optional;
+
 // Member Service 구현체
 @Service
 @RequiredArgsConstructor
@@ -14,6 +16,12 @@ import propofol.userservice.domain.member.repository.MemberRepository;
 public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
+
+    // id를 통해 멤버 조회 - throw는 controller단에서 처리
+    @Override
+    public Optional<Member> getMemberById(Long id) {
+        return memberRepository.findById(id);
+    }
 
     // 이메일을 통해 멤버 조회 (optional)
     // 회원 조회 실패 시 notFoundMember Exception

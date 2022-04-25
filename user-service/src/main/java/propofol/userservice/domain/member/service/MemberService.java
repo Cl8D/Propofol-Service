@@ -2,8 +2,13 @@ package propofol.userservice.domain.member.service;
 
 import propofol.userservice.domain.member.entity.Member;
 
+import java.util.Optional;
+
 // Member Service
 public interface MemberService {
+    // ID로 멤버 조회
+    Optional<Member> getMemberById(Long id);
+
     // 이메일을 통해 멤버 조회
     Member getMemberByEmail(String email);
 
