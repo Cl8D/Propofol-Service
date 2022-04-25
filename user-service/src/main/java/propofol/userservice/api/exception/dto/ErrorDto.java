@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-// Error에 대한 정보를 저장한다.
+// Error 정보 저장 Dto (상위 타입)
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ErrorDto {

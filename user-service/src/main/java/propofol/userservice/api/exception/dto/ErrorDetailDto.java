@@ -3,7 +3,7 @@ package propofol.userservice.api.exception.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-// Error에 대한 세부 정보를 저장하는 필드 DTO
+// Error 정보 저장 Dto
 @Data
 @AllArgsConstructor
 public class ErrorDetailDto {
