@@ -1,6 +1,7 @@
 package propofol.userservice.domain.member.service;
 
 import propofol.userservice.domain.member.entity.Member;
+import propofol.userservice.domain.member.service.dto.UpdateMemberDto;
 
 import java.util.Optional;
 
@@ -18,4 +19,7 @@ public interface MemberService {
 
     // 회원가입 로직
     void saveMember(Member member);
+
+    // 회원 정보 수정 로직
+    void updateMember(UpdateMemberDto updateMemberDto, Long id);
 }
