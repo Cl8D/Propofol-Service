@@ -22,11 +22,15 @@ public class MemberServiceImpl implements MemberService{
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder encoder;
 
+    /*****************/
+
     // id를 통해 멤버 조회 - throw는 controller단에서 처리
     @Override
     public Optional<Member> getMemberById(Long id) {
         return memberRepository.findById(id);
     }
+
+    /*****************/
 
     // 이메일을 통해 멤버 조회 (optional)
     // 회원 조회 실패 시 notFoundMember Exception
@@ -38,6 +42,8 @@ public class MemberServiceImpl implements MemberService{
         return member;
     }
 
+    /*****************/
+
     // 닉네임을 통해 멤버 조회
     @Override
     public Boolean checkDuplicateByNickname(String nickname) {
@@ -47,6 +53,9 @@ public class MemberServiceImpl implements MemberService{
         return true;
     }
 
+    /*****************/
+
+    // 이메일로 회원 중복 여부 체크
     @Override
     public Boolean checkDuplicateByEmail(String email) {
         Member findMember = memberRepository.findDuplicateByEmail(email);
@@ -54,11 +63,15 @@ public class MemberServiceImpl implements MemberService{
         return true;
     }
 
+    /*****************/
+
     // 회원 가입 - db에 저장
     @Override
     public void saveMember(Member member) {
         memberRepository.save(member);
     }
+
+    /*****************/
 
     // 회원 정보 수정
     @Transactional
@@ -81,5 +94,14 @@ public class MemberServiceImpl implements MemberService{
 
         findMember.update(nickname, password, score, degree, phoneNumber);
 
+    }
+
+    /*****************/
+    // 회원 존재 여부 체크
+    @Override
+    public Boolean isExistByEmail(String email) {
+        Member findMember = memberRepository.findExistByEmail(email);
+        // 회원이 null이면 신규 유저니까 false, 기존에 존재한다면 true 리턴
+        return findMember == null ? false : true;
     }
 }
