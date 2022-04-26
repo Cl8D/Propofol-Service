@@ -21,16 +21,15 @@ public class Member extends BaseEntity{
     @Column(nullable = false)
     private String password; // 비밀번호
 
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private String username; // 사용자 이름(성명)
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String nickname; // 별명
 
-    @Column(nullable = false)
-    private String phoneNumber;
+    private String phoneNumber; // 핸드폰 번호
 
-    private LocalDate birth;
+    private LocalDate birth; // 생일
     private String degree; // 학력
     private String score; // 학점
 
