@@ -12,10 +12,12 @@ import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
 import propofol.userservice.api.member.controller.dto.MemberResponseDto;
 import propofol.userservice.api.member.controller.dto.SaveMemberDto;
+import propofol.userservice.api.member.controller.dto.UpdateRequestDto;
 import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.entity.Authority;
 import propofol.userservice.domain.member.service.MemberService;
+import propofol.userservice.domain.member.service.dto.UpdateMemberDto;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
@@ -53,6 +55,20 @@ public class MemberController {
 
         // modelMapper를 활용하여 findMemberDto에 맞춰 객체 생성
         return modelMapper.map(findMember, MemberResponseDto.class);
+    }
+
+    /**********************/
+
+    // 회원 정보 수정
+    @PostMapping("/update")
+    public String updateMember(@RequestBody UpdateRequestDto dto, @Token Long memberId) {
+        // 사용자의 회원 정보 수정을 UpdateMemberDto로 매핑
+        // 즉, dto->dto 매핑이지만 api-domain 계층을 분리하기 위해서 이런 식으로 구성.
+        UpdateMemberDto updateMemberDto = modelMapper.map(dto, UpdateMemberDto.class);
+        memberService.updateMember(updateMemberDto, memberId);
+
+        return "ok";
+
     }
 
 
