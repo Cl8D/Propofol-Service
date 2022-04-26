@@ -5,10 +5,11 @@
 
 ---
 
-###✔ Schedule (~ing)
+### ✔ Schedule (~ing)
 - user-service (0423~)
     - Spring Security + JWT token 활용
     - 회원가입, 로그인, 회원 수정
+    - Oauth2 카카오 로그인 
   
 
 - api-gateway (0425~)
