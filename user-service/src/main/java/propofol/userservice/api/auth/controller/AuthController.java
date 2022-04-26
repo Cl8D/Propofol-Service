@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import propofol.userservice.api.auth.controller.dto.LoginRequestDto;
 import propofol.userservice.api.auth.service.AuthService;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
@@ -25,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 // 일반 로그인 관리
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/auth")
+@RequestMapping("auth")
 @Slf4j
 // 로그인 시 JWT 토큰 반환
 public class AuthController {
@@ -45,6 +42,8 @@ public class AuthController {
 
     // 멤버 저장 (회원가입)
     @PostMapping("/join")
+    // created -> 클라이언트의 요청을 서버가 정상적으로 처리 + 새로운 리소스 생성
+    @ResponseStatus(HttpStatus.CREATED)
     // @validated를 통해 원하는 속성에 대해서만 유효성 검사 가능
     // requestBody로 회원 가입 시 해당 멤버 정보 저장
     public Object saveMember(@Validated @RequestBody SaveMemberDto saveMemberDto, HttpServletResponse response){
@@ -73,7 +72,7 @@ public class AuthController {
         // 회원 가입 진행
         memberService.saveMember(member);
 
-        return "회원 가입 성공!";
+        return "ok";
     }
 
     private Member createMember(SaveMemberDto saveMemberDto, LocalDate date) {
