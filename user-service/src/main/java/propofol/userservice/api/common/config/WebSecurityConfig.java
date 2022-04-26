@@ -79,7 +79,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         config.addAllowedMethod("*"); // 모든 post, get, delete, fetch 허용
 
         // /api로 들어오는 주소들은 모두 이 config 설정 적용
-        source.registerCorsConfiguration("/api/**", config);
+//        source.registerCorsConfiguration("/api/**", config);
+
+        source.registerCorsConfiguration("/**", config);
 
         return source;
     }
