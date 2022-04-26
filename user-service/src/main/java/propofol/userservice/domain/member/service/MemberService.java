@@ -22,4 +22,7 @@ public interface MemberService {
 
     // 회원 정보 수정 로직
     void updateMember(UpdateMemberDto updateMemberDto, Long id);
+
+    // 회원 존재 여부 확인 (Oauth 사용자)
+    Boolean isExistByEmail(String email);
 }
