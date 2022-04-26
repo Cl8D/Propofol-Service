@@ -23,7 +23,7 @@ public class AuthService {
     // JWT 토큰 생성기
     private final JwtProvider jwtProvider;
 
-    // Authentication 객체를 받아 인증하고, 인증되었다면 Authentication  객체를 돌려주는 메서드를 구현하도록 하는 인터페이스
+    // Authentication 객체를 받아 인증하고, 인증되었다면 Authentication 객체를 돌려주는 메서드를 구현하도록 하는 인터페이스
     private final AuthenticationManager authenticationManager;
 
     public Object propofolLogin(LoginRequestDto loginDto, HttpServletResponse response) {
