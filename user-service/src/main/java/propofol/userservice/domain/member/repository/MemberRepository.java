@@ -14,4 +14,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Member findDuplicateByNickname(String nickname);
     // 이메일을 통해 회원 조회 (중복 체크를 위함)
     Member findDuplicateByEmail(String email);
+
+    // 이메일을 통해 회원 존재 여부 확인 (Oauth 사용자)
+    Member findExistByEmail(String email);
 }
