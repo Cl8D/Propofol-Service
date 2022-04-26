@@ -5,6 +5,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import propofol.userservice.api.common.properties.JwtProperties;
+
+import javax.annotation.PostConstruct;
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Arrays;
@@ -25,8 +30,10 @@ import java.util.stream.Collectors;
 // JWT 토큰 생성기
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class JwtProvider {
 
+    /** v1. 설정파일 주입 시 @Value 사용 */
     // 설정파일을 주입시킬 때 @Value를 사용한다.
     // @Value("${properties-key}"와 같은 형식으로 사용한다.
     // 만약 설정파일에 test.name="hi"라고 저장해왔다면,
@@ -38,21 +45,40 @@ public class JwtProvider {
     // 걍 @Value랑 똑같은 역할을 한다고 보면 될 것 같다.
 //    private final Environment env;
 
-    private final Key key;
-    private final String expirationTime;
-    private final String type;
+//    private final Key key;
+//    private final String expirationTime;
+//    private final String type;
 
+
+    /** v3. 설정 정보 적용 */
+    // Jwt 설정 정보 적용하기 (Env 사용 x)
+    private final JwtProperties jwtProperties;
+    private Key key;
+
+    /** v2. 프로퍼티 정보 가져올 때 생성자를 통해서 의존성 주입하기*/
     // 프로퍼티 정보 가져오기 - 생성자를 통해 의존성 주입
     // 원래는 기존 코드에서 로드했었는데 그냥 한 번에 로드하는 형식으로 코드 변경
-    public JwtProvider(@Value("${token.secret}") String secret,
-                       @Value("${token.expiration_time}") String expirationTime,
-                       @Value("${token.type}") String type) {
+//    public JwtProvider(@Value("${token.secret}") String secret,
+//                       @Value("${token.expiration_time}") String expirationTime,
+//                       @Value("${token.type}") String type) {
+//
+//        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
+//        this.key = Keys.hmacShaKeyFor(bytes);
+//        this.expirationTime = expirationTime;
+//        this.type = type;
+//    }
 
-        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
-        this.key = Keys.hmacShaKeyFor(bytes);
-        this.expirationTime = expirationTime;
-        this.type = type;
+
+    /** v3. PostConstruct를 통해서 key값 초기화하기*/
+    // PostConstrct -> DI 이후 초기화 수행하는 메서드
+    // bean이 초기화될 때 동시에 DI를 확인할 수 있음!
+    // jwtProperties에서 값을 꺼내와서 적용해주기
+    @PostConstruct
+    private void createKey() {
+        byte[] bytes = jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8);
+        key = Keys.hmacShaKeyFor(bytes);
     }
+
 
 
     // 유저 정보를 활용하여 accessToken, refreshToken을 생성한다.
@@ -64,6 +90,8 @@ public class JwtProvider {
                 // joining => a, b, c... 이런 식으로 생성 가능
                 .collect(Collectors.joining(", "));
 
+
+        /** v1. env 사용해서 yml 파일 읽기 */
 //        // application-secret.yml에 있는 token:secret 값을 가져온다.
 //        String secret = env.getProperty("token.secret");
 //
@@ -72,10 +100,12 @@ public class JwtProvider {
 //
 //        key = Keys.hmacShaKeyFor(keyBytes);
 
+
         // 토큰 만료 기간
         Date expirationDate = new Date(System.currentTimeMillis()
 //                + Long.parseLong(env.getProperty("token.expiration_time")));
-                + Long.parseLong(expirationTime));
+//                + Long.parseLong(expirationTime));
+                + Long.parseLong(jwtProperties.getExpirationTime()));
 
         // jwt 토큰 생성
         String token = Jwts.builder()
@@ -88,7 +118,8 @@ public class JwtProvider {
 //        String type = env.getProperty("token.type"); // bearer
 
         return TokenDto.createTokenDto()
-                .type(type)
+//                .type(type)
+                .type(jwtProperties.getType())
                 .accessToken(token)
                 .refreshToken(null)
                 .expirationDate(expirationDate.getTime())
