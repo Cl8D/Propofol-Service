@@ -13,7 +13,6 @@ import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
 // 공통 필드
-
 // 객체 입장에서 공통의 매핑 정보가 필요할 때 사용
 // 부모 클래스에 선언 후 상속받아서 사용할 수 있음.
 // 엔티티가 아니기 때문에 테이블이랑 매핑 X + 조회, 검색 불가능
