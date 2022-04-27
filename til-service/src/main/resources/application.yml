@@ -1,0 +1,14 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: til-service
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      name: secret
+  profiles:
+    active: dev
+
