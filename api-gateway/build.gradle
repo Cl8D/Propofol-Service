@@ -26,8 +26,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
 
+	// spring cloud
 	implementation 'org.springframework.cloud:spring-cloud-starter'
-//	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	// config dependency 추가
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	// spring cloud - eureka
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
