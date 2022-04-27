@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 // access token 발급 시 필요한 파라미터 정보들이다.
 // cf) https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api
 @Getter
-@ConfigurationProperties(prefix = "oauth.provider.kakao")
+@ConfigurationProperties(prefix = "oauth2.provider.kakao")
 @ConstructorBinding
 public class KakaoOauth2Properties {
     // token 발급을 위해 카카오에게 요청하는 주소
