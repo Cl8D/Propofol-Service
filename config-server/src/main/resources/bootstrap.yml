@@ -1,0 +1,4 @@
+encrypt:
+    key: abcdefghijklnmopqurs1234567890zxcvbnmasdasd # 대칭키
+
+# 비대칭키는 공유가 안되는 관계로 대칭키 사용
