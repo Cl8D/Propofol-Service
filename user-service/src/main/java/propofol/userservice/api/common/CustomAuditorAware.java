@@ -1,4 +1,4 @@
-package propofol.userservice.domain.common;
+package propofol.userservice.api.common;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;
