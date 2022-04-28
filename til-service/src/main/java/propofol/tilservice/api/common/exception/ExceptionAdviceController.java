@@ -27,6 +27,8 @@ public class ExceptionAdviceController {
         return null;
     }
 
+    /************/
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     // 잘못된 요청을 보냈을 때
@@ -35,6 +37,8 @@ public class ExceptionAdviceController {
         return errorDto;
     }
 
+    /************/
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     // 게시글을 찾을 수 없을 때
@@ -42,6 +46,8 @@ public class ExceptionAdviceController {
         ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
         return errorDto;
     }
+
+    /************/
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -52,6 +58,16 @@ public class ExceptionAdviceController {
         e.getFieldErrors().forEach(error -> {
             errorDto.getErrors().add(new ErrorDetailDto(error.getField(), error.getDefaultMessage()));
         });
+        return errorDto;
+    }
+
+    /************/
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    // 게시글 수정, 삭제를 생성한 유저가 하지 않을 때
+    public ErrorDto NotMatchMemberException (NotMatchMemberException e) {
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
         return errorDto;
     }
 
