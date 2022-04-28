@@ -5,6 +5,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 //import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,7 +16,9 @@ import org.springframework.web.client.RestTemplate;
 // jpaAuditing 활성화
 @EnableJpaAuditing
 // Eureka Client 활성화
-//@EnableEurekaClient
+@EnableEurekaClient
+// Feign Client 사용
+@EnableFeignClients(basePackages = "propofol.userservice.api.feign")
 @ConfigurationPropertiesScan(basePackages = "propofol.userservice.api.common.properties")
 public class UserServiceApplication {
 
