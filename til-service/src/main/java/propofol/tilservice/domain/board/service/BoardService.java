@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import propofol.tilservice.api.common.exception.NotMatchMemberException;
 import propofol.tilservice.domain.board.entity.Board;
 import propofol.tilservice.domain.board.repository.BoardRepository;
 import propofol.tilservice.domain.board.service.dto.BoardDto;
@@ -15,7 +16,6 @@ import propofol.tilservice.domain.exception.NotFoundBoard;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class BoardService {
     private final BoardRepository boardRepository;
 
@@ -56,10 +56,15 @@ public class BoardService {
     /***************************/
 
     // 게시글 수정
-    @Transactional
-    public String updateBoard(Long boardId, BoardDto boardDto) {
+    @Transactional // 업데이트는 jpa를 활용하지 않기 때문에 변경 감지 기능을 통한 db에 반영
+    public String updateBoard(Long boardId, BoardDto boardDto, String memberId) {
         Board findBoard = getBoard(boardId);
-        findBoard.updateBoard(boardDto.getTitle(), boardDto.getContent(), boardDto.getOpen());
+        // 게시글에 저장된 createdBy (=작성자)와 넘어온 memberId가 동일하다면 수정 진행
+        if(findBoard.getCreatedBy().equals(memberId))
+            findBoard.updateBoard(boardDto.getTitle(), boardDto.getContent(), boardDto.getOpen());
+        // 아니라면 예외 처리
+        else
+            throw new NotMatchMemberException("권한이 없습니다.");
         return "ok";
     }
 
@@ -73,11 +78,25 @@ public class BoardService {
 
     /*********************/
 
-    // 게시글 삭제
-    public String deleteBoard(Long boardId) {
+    // 게시글 삭제 - 게시글에 저장된 createdBy와 마찬가지로 비교
+    public String deleteBoard(Long boardId, String memberId) {
         Board findBoard = getBoard(boardId);
-        boardRepository.delete(findBoard);
+        if(findBoard.getCreatedBy().equals(memberId))
+            // JPA가 기본으로 제공하는 문법에서는 @Transactional 어노테이션을 붙이기 때문에 따로 설정해줄 필요가 없다.
+            boardRepository.delete(findBoard);
+        else
+            throw new NotMatchMemberException("권한이 없습니다.");
         return "ok";
+    }
+
+    /*******************/
+
+    // 본인의 게시글만 가져오기
+    public Page<Board> getPagesByMemberId(Integer pageNumber, String memberId) {
+        PageRequest pageRequest = PageRequest.of(pageNumber - 1, 10,
+                Sort.by(Sort.Direction.DESC, "id"));
+        Page<Board> result = boardRepository.findPagesByCreatedBy(pageRequest, memberId);
+        return result;
     }
 
 
