@@ -35,7 +35,6 @@ public class ExceptionAdviceController {
         return errorDto;
     }
 
-    /** TODO 오류 핸들러 프로젝트 단에서 수정하기 (메서드 이름 오류)*/
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     // 게시글을 찾을 수 없을 때

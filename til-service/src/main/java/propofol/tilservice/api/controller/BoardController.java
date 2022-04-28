@@ -80,7 +80,6 @@ public class BoardController {
     // 게시글 번호와 수정 내용이 함께 넘어오게 된다.
     @PostMapping("/{boardId}")
     public String updateBoard(@PathVariable Long boardId, @Validated @RequestBody BoardUpdateRequestDto requestDto) {
-        /**TODO 본 프로젝트에서도 boardDto 넘길 수 있도록 코드 수정해주기 */
         // domain 단의 board entity로 접근할 수 있게 하기 위해서 BoardDto 형태로 변경
         BoardDto boardDto = modelMapper.map(requestDto, BoardDto.class);
 
