@@ -45,15 +45,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().cors();
 
-//        http
-//                // 요청에 대한 권한 지정
-//                .authorizeHttpRequests()
-//                // 모든 경로에 대해 인증 필요함 (블로그 서비스는 꼭 로그인된 유저만 사용할 수 있으니까)
-//                .antMatchers("/**")
-//                .authenticated()
-//                .and()
-//                // 커스텀 필터 추가
-//                .addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class);
+        http
+                // 요청에 대한 권한 지정
+                .authorizeHttpRequests()
+                // 모든 경로에 대해 인증 필요함 (블로그 서비스는 꼭 로그인된 유저만 사용할 수 있으니까)
+                .antMatchers("/api/v1/**")
+                .authenticated()
+                .and()
+                // 커스텀 필터 추가 - 무조건 prefilter를 거치게 되고, Authentication 객체가 만들어진다
+                .addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class);
 
         // h2-console을 보기 위한 설정
         http.headers()
