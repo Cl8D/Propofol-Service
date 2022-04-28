@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import propofol.userservice.api.common.annotation.Token;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
+import propofol.userservice.api.member.controller.dto.MemberBoardsResponseDto;
 import propofol.userservice.api.member.controller.dto.MemberResponseDto;
 import propofol.userservice.api.member.controller.dto.SaveMemberDto;
 import propofol.userservice.api.member.controller.dto.UpdateRequestDto;
+import propofol.userservice.api.member.service.MemberBoardService;
 import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.entity.Authority;
@@ -32,6 +34,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final ModelMapper modelMapper;
+    private final MemberBoardService memberBoardService;
 
     @GetMapping("/health-check")
     public String health(){
@@ -45,7 +48,7 @@ public class MemberController {
 //    @GetMapping("/users/{email}")
 //    public MemberResponseDto getMemberByEmail(@PathVariable String email) {
     @GetMapping
-    public MemberResponseDto getMemberByEmail(@Token Long memberId) {
+    public MemberResponseDto getMemberByMemberId(@Token Long memberId) {
         // email 대신 pk 값을 활용해서 멤버를 조회할 수 있도록.
 //        Member findMember = memberService.getMemberByEmail(email);
 
@@ -68,7 +71,23 @@ public class MemberController {
         memberService.updateMember(updateMemberDto, memberId);
 
         return "ok";
+    }
 
+    /*******************/
+
+    // 자기 자신의 게시글 가져오기
+    // localhost:8081/api/v1/members/myboards?page=1
+    @GetMapping("/myboards")
+    public MemberBoardsResponseDto getMyBoards(
+            // 파라미터로 페이지 정보
+            @RequestParam Integer page,
+            // http-header 중 authorization의 내용을(요청된 헤더값을)
+            // token이라는 파라미터로 전달해주기
+            // 여기에는 Bearer ewfijeoif3294 같은 정보가 들어가있다!
+            @RequestHeader(name = "Authorization") String token) {
+
+        // 최종적으로 responseDto (총 페이지, 게시글 수, 게시글 정보가 담김)정보를 리턴받아서 정보를 뿌려준다.
+        return memberBoardService.getMyBoards(page, token);
     }
 
 
