@@ -28,7 +28,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-//	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.6'
 
 	//Annotation Processor 추가
@@ -36,6 +36,9 @@ dependencies {
 
 	// Oauth2 Dependency 추가
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	//Feign Client 추가
+	implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
 
 	// jwt 추가
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
