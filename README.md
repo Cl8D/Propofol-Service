@@ -13,7 +13,7 @@
 ### ✔ Schedule (~ing)
 - user-service (0423~)
     - Spring Security + JWT token 활용
-    - 회원가입, 로그인, 회원 수정
+    - 회원가입, 로그인, 회원 수정, 비밀번호 찾기
     - Oauth2 카카오 로그인 
     - til-service와 통신하여 사용자의 글 정보 얻어오기
   
@@ -34,3 +34,9 @@
 - til-service (0427~)
   - 게시판 CRUD, 페이징
   - 게시글 수정, 삭제 시 권한 확인 추가 
+  - 댓글 CRUD 구현 중
+  - 로컬 파일 업로드 구현 (클라이언트 테스트는 아직 X)
+
+
+- secret.yml
+  - 본 프로젝트에서는 아마존 AWS 사용, AWS RDS 사용
