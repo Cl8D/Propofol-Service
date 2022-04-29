@@ -121,7 +121,6 @@ public class BoardController {
     // 본인의 게시글만 조회하기
     // user-service의 FeignClient를 통해 요청이 들어왔을 때 처리되는 메서드
     // 응답 결과로 총 페이지수, 게시글 수, 게시글 리스트가 담긴 BoardListResponseDto를 넘겨주게 된다. (-> user-service로)
-    /**TODO 본 프로젝트에서 @Token 파라미터 Long->String형으로 변경하기  */
     @GetMapping("/myBoards")
     public BoardListResponseDto getPageBoardsByMemberId(@RequestParam Integer page, @Token String memberId) {
         BoardListResponseDto boardListResponseDto = new BoardListResponseDto();
