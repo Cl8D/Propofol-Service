@@ -7,7 +7,7 @@ import java.util.List;
 
 // 페이지에 대한 응답 정보를 담는 Dto
 @Data
-public class BoardListResponseDto {
+public class BoardPageResponseDto {
     // 총 페이지 수
     private Integer totalPageCount;
 
