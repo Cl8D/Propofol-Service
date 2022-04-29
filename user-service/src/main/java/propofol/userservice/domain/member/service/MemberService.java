@@ -1,5 +1,6 @@
 package propofol.userservice.domain.member.service;
 
+import propofol.userservice.api.auth.controller.dto.UpdatePasswordRequestDto;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.service.dto.UpdateMemberDto;
 
@@ -25,4 +26,7 @@ public interface MemberService {
 
     // 회원 존재 여부 확인 (Oauth 사용자)
     Boolean isExistByEmail(String email);
+
+    // 비밀번호 변경
+    void updatePassword(String email, String password);
 }

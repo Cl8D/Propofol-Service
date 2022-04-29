@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import propofol.userservice.api.auth.controller.dto.UpdatePasswordRequestDto;
 import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.repository.MemberRepository;
@@ -16,7 +17,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
 public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
@@ -103,5 +103,14 @@ public class MemberServiceImpl implements MemberService{
         Member findMember = memberRepository.findExistByEmail(email);
         // 회원이 null이면 신규 유저니까 false, 기존에 존재한다면 true 리턴
         return findMember == null ? false : true;
+    }
+
+    /*****************/
+    // 비밀번호 변경
+    @Override
+    @Transactional
+    public void updatePassword(String email, String password) {
+        Member findMember = getMemberByEmail(email);
+        findMember.updatePassword(encoder.encode(password));
     }
 }
