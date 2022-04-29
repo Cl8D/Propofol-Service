@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import propofol.tilservice.api.common.exception.dto.ErrorDetailDto;
 import propofol.tilservice.api.common.exception.dto.ErrorDto;
-import propofol.tilservice.domain.exception.NotFoundBoard;
+import propofol.tilservice.domain.exception.NotFoundBoardException;
+import propofol.tilservice.domain.exception.NotFoundCommentException;
+import propofol.tilservice.domain.exception.NotFoundFileException;
+import propofol.tilservice.domain.exception.NotSaveFileException;
 
 import javax.validation.ConstraintViolationException;
 
@@ -42,7 +45,7 @@ public class ExceptionAdviceController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     // 게시글을 찾을 수 없을 때
-    public ErrorDto NotFoundBoardException(NotFoundBoard e) {
+    public ErrorDto NotFoundBoardException(NotFoundBoardException e) {
         ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
         return errorDto;
     }
@@ -71,6 +74,48 @@ public class ExceptionAdviceController {
         return errorDto;
     }
 
+    /************/
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    // 동일한 인물이 추천을 하려고 할 때
+    public ErrorDto SameMemberException (SameMemberException e) {
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return errorDto;
+    }
+
+    /************/
+
+    // 파일 저장 오류
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto NotSaveFileException(NotSaveFileException e){
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return errorDto;
+    }
+
+    /************/
+
+    // 파일을 찾을 수 없을 때
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto NotFoundFileException(NotFoundFileException e){
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return errorDto;
+    }
+
+    /************/
+
+    // 댓글을 찾을 수 없을 때
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto NotFoundCommentException(NotFoundCommentException e){
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return errorDto;
+    }
+
+
+    // 에러 생성 메서드
     private ErrorDto createError(String errorMessage, HttpStatus status) {
         ErrorDto errorDto = new ErrorDto();
         errorDto.setMessage(errorMessage);
