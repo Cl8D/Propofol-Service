@@ -8,16 +8,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import propofol.tilservice.api.common.exception.NotMatchMemberException;
+import propofol.tilservice.api.common.exception.SameMemberException;
 import propofol.tilservice.domain.board.entity.Board;
+import propofol.tilservice.domain.board.entity.Recommend;
 import propofol.tilservice.domain.board.repository.BoardRepository;
+import propofol.tilservice.domain.board.repository.RecommendRepository;
 import propofol.tilservice.domain.board.service.dto.BoardDto;
-import propofol.tilservice.domain.exception.NotFoundBoard;
+import propofol.tilservice.domain.exception.NotFoundBoardException;
+
+import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final RecommendRepository recommendRepository;
 
     // 페이지 단위로 게시글 가져오기
     public Page<Board> getPageBoards(Integer pageNumber) {
@@ -33,17 +39,13 @@ public class BoardService {
     /*********************/
 
     // 게시판 글 쓰기
-    public String saveBoard(BoardDto boardDto) {
-        // boardDto 형을 바탕으로 Board형의 객체 생성
-        Board board = createBoard(boardDto);
-
+    public String saveBoard(Board board) {
         // 게시글 저장
         boardRepository.save(board);
-
         return "ok";
     }
 
-    private Board createBoard(BoardDto boardDto) {
+    public Board createBoard(BoardDto boardDto) {
         Board board = Board.createBoard()
                 .title(boardDto.getTitle())
                 .content(boardDto.getContent())
@@ -71,7 +73,7 @@ public class BoardService {
     // 하나의 게시글 가져오기
     public Board getBoard(Long boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(() -> {
-            throw new NotFoundBoard("게시글을 찾을 수 없습니다.");
+            throw new NotFoundBoardException("게시글을 찾을 수 없습니다.");
         });
         return board;
     }
@@ -81,6 +83,9 @@ public class BoardService {
     // 게시글 삭제 - 게시글에 저장된 createdBy와 마찬가지로 비교
     public String deleteBoard(Long boardId, String memberId) {
         Board findBoard = getBoard(boardId);
+        // 게시글 삭제 시 관련된 추천수 데이터도 함께 삭제해주기
+        recommendRepository.bulkDeleteAll(boardId);
+
         if(findBoard.getCreatedBy().equals(memberId))
             // JPA가 기본으로 제공하는 문법에서는 @Transactional 어노테이션을 붙이기 때문에 따로 설정해줄 필요가 없다.
             boardRepository.delete(findBoard);
@@ -98,6 +103,10 @@ public class BoardService {
         Page<Board> result = boardRepository.findPagesByCreatedBy(pageRequest, memberId);
         return result;
     }
+
+    /*******************/
+
+
 
 
 }
