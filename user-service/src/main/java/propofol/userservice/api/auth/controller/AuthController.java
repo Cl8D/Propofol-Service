@@ -7,6 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import propofol.userservice.api.auth.controller.dto.LoginRequestDto;
+import propofol.userservice.api.auth.controller.dto.UpdatePasswordRequestDto;
 import propofol.userservice.api.auth.service.AuthService;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
@@ -103,5 +104,15 @@ public class AuthController {
             errorDto.getErrors().add(new ErrorDetailDto("Nickname", "중복 오류"));
         }
     }
+
+    /********************/
+
+    // 비밀번호 변경 기능
+    @PostMapping("/updatePassword")
+    public String updatePassword(@RequestBody UpdatePasswordRequestDto requestDto) {
+        memberService.updatePassword(requestDto.getEmail(), requestDto.getPassword());
+        return "ok";
+    }
+
 
 }
