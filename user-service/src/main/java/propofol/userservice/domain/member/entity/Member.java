@@ -1,6 +1,7 @@
 package propofol.userservice.domain.member.entity;
 
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -9,6 +10,8 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+// 변경된 점에 대해서만 update 하는 어노테이션
+@DynamicUpdate
 public class Member extends BaseEntity{
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,5 +69,10 @@ public class Member extends BaseEntity{
 
         if(phoneNumber != null)
             this.phoneNumber = phoneNumber;
+    }
+
+    // 비밀번호 수정
+    public void updatePassword(String password) {
+        this.password = password;
     }
 }
