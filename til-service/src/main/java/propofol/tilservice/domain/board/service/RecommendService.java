@@ -53,10 +53,4 @@ public class RecommendService {
 
         return "ok";
     }
-
-    // 게시글이 삭제되면 해당 게시글에 대한 추천 역시 전부 삭제된다.
-    @Transactional
-    public void bulkDelete(Long boardId) {
-        recommendRepository.bulkDeleteAll(boardId);
-    }
 }
