@@ -114,6 +114,26 @@ public class ExceptionAdviceController {
         return errorDto;
     }
 
+    /************/
+
+    // 게시글 생성 실패
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto BoardCreateException(BoardCreateException e){
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return errorDto;
+    }
+
+    /************/
+
+    // 게시글 수정 실패
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto BoardUpdateException(BoardUpdateException e){
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return errorDto;
+    }
+
 
     // 에러 생성 메서드
     private ErrorDto createError(String errorMessage, HttpStatus status) {
