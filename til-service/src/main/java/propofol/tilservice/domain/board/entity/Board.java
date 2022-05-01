@@ -59,11 +59,6 @@ public class Board extends BaseEntity {
         image.addBoard(this);
     }
 
-    public void addComment (Comment comment) {
-        comments.add(comment);
-        comment.addBoard(this);
-    }
-
     // 빌더 생성
     @Builder(builderMethodName = "createBoard")
     public Board(String title, String content, Integer recommend, Boolean open) {
