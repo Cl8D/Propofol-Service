@@ -8,15 +8,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import propofol.tilservice.api.common.annotation.Jwt;
 import propofol.tilservice.api.common.annotation.Token;
+import propofol.tilservice.api.common.exception.BoardCreateException;
+import propofol.tilservice.api.common.exception.BoardUpdateException;
 import propofol.tilservice.api.common.properties.FileProperties;
-import propofol.tilservice.api.controller.dto.*;
+import propofol.tilservice.api.controller.dto.board.BoardCreateRequestDto;
+import propofol.tilservice.api.controller.dto.board.BoardPageResponseDto;
+import propofol.tilservice.api.controller.dto.board.BoardResponseDto;
+import propofol.tilservice.api.controller.dto.board.BoardUpdateRequestDto;
+import propofol.tilservice.api.controller.dto.comment.CommentPageResponseDto;
+import propofol.tilservice.api.controller.dto.comment.CommentRequestDto;
+import propofol.tilservice.api.controller.dto.comment.CommentResponseDto;
+import propofol.tilservice.api.service.StreakService;
 import propofol.tilservice.domain.board.entity.Board;
+import propofol.tilservice.domain.board.entity.Comment;
 import propofol.tilservice.domain.board.service.BoardService;
 import propofol.tilservice.domain.board.service.CommentService;
 import propofol.tilservice.domain.board.service.RecommendService;
 import propofol.tilservice.domain.board.service.dto.BoardDto;
-import propofol.tilservice.domain.board.service.dto.CommentDto;
 import propofol.tilservice.domain.file.service.ImageService;
 
 import java.util.List;
@@ -34,7 +44,7 @@ public class BoardController {
     private final ImageService imageService;
     private final RecommendService recommendService;
     private final CommentService commentService;
-
+    private final StreakService streakService;
 
     // 테스트 데이터 추가
 //    private final InitBoardService initBoardService;
@@ -75,11 +85,20 @@ public class BoardController {
     // 게시판 글 쓰기 (파일 없이 단순 글쓰기)
     // @NotEmpty 등을 적용하기 위해서 @Validated 붙여주기
     @PostMapping
-    public String createBoard(@Validated @RequestBody BoardCreateRequestDto requestDto) {
+    public String createBoard(@Validated @RequestBody BoardCreateRequestDto requestDto,
+                              @Jwt String token) {
         // domain 단의 board entity로 접근할 수 있게 하기 위해서 BoardDto 형태로 변경
         BoardDto boardDto = modelMapper.map(requestDto, BoardDto.class);
         Board board = boardService.createBoard(boardDto);
-        return boardService.saveBoard(board);
+
+        // 게시글 생성 시 스트릭 저장
+        try {
+            streakService.saveStreak(token);
+            boardService.saveBoard(board);
+        } catch (Exception e) {
+            throw new BoardCreateException("게시글 생성 시 오류가 발생하였습니다.");
+        }
+        return "ok";
     }
 
     /************************/
@@ -90,10 +109,19 @@ public class BoardController {
     @PostMapping("/{boardId}")
     public String updateBoard(@PathVariable Long boardId,
                               @RequestBody BoardUpdateRequestDto requestDto,
-                              @Token String memberId) {
+                              @Token String memberId,
+                              @Jwt String token) {
         // domain 단의 board entity로 접근할 수 있게 하기 위해서 BoardDto 형태로 변경
         BoardDto boardDto = modelMapper.map(requestDto, BoardDto.class);
-        return boardService.updateBoard(boardId, boardDto, memberId);
+
+        // 게시글 수정 시에도 스트릭 채워지도록!
+        try {
+            boardService.updateBoard(boardId, boardDto, memberId);
+            streakService.saveStreak(token);
+        } catch (Exception e) {
+            throw new BoardUpdateException("게시글 수정 시 오류가 발생하였습니다.");
+        }
+        return "ok";
     }
 
     /*******************/
@@ -109,6 +137,10 @@ public class BoardController {
         Board board = boardService.getBoard(boardId);
 
         // board 정보를 바탕으로 응답 dto인 BoardResponseDto 객체 생성
+        return getBoardResponseDto(board);
+    }
+
+    private BoardResponseDto getBoardResponseDto(Board board) {
         BoardResponseDto boardResponseDto = new BoardResponseDto();
 
         boardResponseDto.setBoardUUID(board.getId());
@@ -171,7 +203,8 @@ public class BoardController {
             @RequestParam("file") List<MultipartFile> files,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
-            @RequestParam("open") Boolean open
+            @RequestParam("open") Boolean open,
+            @Jwt String token
     ) {
 
         // 요청 내용을 바탕으로 dto 생성해주기
@@ -182,10 +215,18 @@ public class BoardController {
 
         // 게시글 생성
         Board board = boardService.createBoard(boardDto);
-        // 게시글 저장
-        boardService.saveBoard(board);
-        // 파일 처리, 업로드할 디렉토리 경로 함께 전달하기
-        imageService.saveBoardFile(fileProperties.getBoardDir(), files, board);
+
+        try {
+            // 게시글 저장
+            boardService.saveBoard(board);
+            // 스트릭 저장
+            streakService.saveStreak(token);
+            // 파일 처리, 업로드할 디렉토리 경로 함께 전달하기
+            imageService.saveBoardFile(fileProperties.getBoardDir(), files, board);
+        } catch (Exception e) {
+            throw new BoardCreateException("게시글 생성 시 오류가 발생하였습니다.");
+        }
+
         return "ok";
     }
 
@@ -194,9 +235,9 @@ public class BoardController {
     // 부모 댓글 (대댓글이 존재하지 않는 가장 첫 댓글에 대해)
     @PostMapping("/{boardId}/comment")
     public String createParentComment(@PathVariable(value = "boardId") Long boardId,
-                                      @Validated @RequestBody CommentRequestDto requestDto) {
-        CommentDto commentDto = modelMapper.map(requestDto, CommentDto.class);
-        return commentService.saveParentComment(commentDto, boardId);
+                                      @Validated @RequestBody CommentRequestDto requestDto,
+                                      @Jwt String token) {
+        return commentService.saveParentComment(requestDto, boardId, token);
     }
 
     // 자식 댓글 (대댓글, 하나의 부모 댓글에 대해 여러 자식 댓글이 달린다.)
@@ -204,9 +245,67 @@ public class BoardController {
     @PostMapping("/{boardId}/{parentId}/comment")
     public String createChildComment(@PathVariable(value = "boardId") Long boardId,
                                      @PathVariable(value = "parentId") Long parentId,
-                                     @Validated @RequestBody CommentRequestDto requestDto) {
-        CommentDto commentDto = modelMapper.map(requestDto, CommentDto.class);
-        return commentService.saveChildComment(commentDto, boardId, parentId);
+                                     @Validated @RequestBody CommentRequestDto requestDto,
+                                     @Jwt String token) {
+        return commentService.saveChildComment(requestDto, boardId, parentId, token);
     }
+
+    /*********************/
+
+    // 댓글 정보 제공
+    // 응답 정보 -> 게시글Id, 총 댓글 페이징 수, 댓글 수, 댓글DTO 리스트
+    //  댓글 DTO -> id, 닉네임, 내용, 그룹id
+    @GetMapping("/{boardId}/comments")
+    public CommentPageResponseDto getComments(@PathVariable(value = "boardId") Long boardId,
+                                              @RequestParam("page") Integer page) {
+        return getCommentPageResponseDto(boardId, page);
+    }
+
+    private CommentPageResponseDto getCommentPageResponseDto(Long boardId, Integer page) {
+        CommentPageResponseDto responseDto = new CommentPageResponseDto();
+        Page<Comment> comments = commentService.getComments(boardId, page);
+        responseDto.setBoardId(boardId);
+
+        responseDto.setTotalCommentPageCount(comments.getTotalPages());
+        responseDto.setTotalCommentCount(comments.getTotalElements());
+
+        comments.forEach(comment -> {
+            responseDto.getComments().add(
+                    new CommentResponseDto(comment.getId(), comment.getNickname(),
+                            comment.getContent(), comment.getGroupId()));
+        });
+        return responseDto;
+    }
+
+    /*********************/
+
+    // 게시글 제목 검색 기능
+    @GetMapping("/search/title/{keyword}")
+    public BoardPageResponseDto findBoardByTitle(
+            @PathVariable(value = "keyword") String keyword,
+            @RequestParam(value = "page") Integer page) {
+        Page<Board> pageBoards = boardService.getPageByTitleKeyword(keyword, page);
+        return getBoardPageResponseDto(pageBoards);
+    }
+
+    private BoardPageResponseDto getBoardPageResponseDto(Page<Board> pageBoards) {
+        BoardPageResponseDto boardPageResponseDto = new BoardPageResponseDto();
+
+        boardPageResponseDto.setTotalCount(pageBoards.getTotalElements());
+        boardPageResponseDto.setTotalPageCount(pageBoards.getTotalPages());
+
+        List<BoardResponseDto> boards = boardPageResponseDto.getBoards();
+
+        pageBoards.forEach(board -> {
+            boards.add(new BoardResponseDto(board.getId(), board.getTitle(),
+                    board.getContent(), board.getRecommend(), board.getOpen()));
+        });
+
+        /** TODO 코드 수정 - 본 프로젝트 set으로 board 정보 담아줘야 함!*/
+        boardPageResponseDto.setBoards(boards);
+
+        return boardPageResponseDto;
+    }
+
 
 }
