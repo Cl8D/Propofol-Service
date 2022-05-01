@@ -23,4 +23,11 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Page<Board> findPagesByCreatedBy(Pageable pageable,
                                      @Param("createdBy") String createdBy);
 
+    // 게시글 제목 검색 조회 (페이징)
+    // 검색 쿼리는 like를 사용하며, 정확하게는 문자열의 패턴을 검색할 때 like를 사용한다.
+    // 이때 %keyword%로 하면, 앞뒤에 무엇이 붙은 keyword가 포함되는 결과가 있으면 가져온다.
+    // jpa에서는 파라미터로 이를 받을 때 %:keyword% 형식으로 사용한다!
+    @Query("select b from Board b where b.title like %:keyword%")
+    @Transactional(readOnly = true)
+    Page<Board> findPageByTitleKeyword(@Param(value = "keyword") String keyword, Pageable pageable);
 }
