@@ -1,6 +1,7 @@
 package propofol.tilservice.domain.file.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import propofol.tilservice.domain.file.entity.Image;
@@ -13,4 +14,9 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     // 즉, 하나의 게시글에 올라온 이미지 목록을 가져오도록!
     @Query("select i from Image i where i.board.id =:boardId")
     List<Image> findImages(@Param(value = "boardId") Long boardId);
+
+    // 이미지 벌크 삭제
+    @Modifying
+    @Query("delete from Image i where i.board.id=:boardId")
+    int deleteBulkImages(@Param(value = "boardId") Long boardId);
 }
