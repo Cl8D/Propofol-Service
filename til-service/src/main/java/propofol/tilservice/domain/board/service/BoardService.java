@@ -12,10 +12,15 @@ import propofol.tilservice.api.common.exception.SameMemberException;
 import propofol.tilservice.domain.board.entity.Board;
 import propofol.tilservice.domain.board.entity.Recommend;
 import propofol.tilservice.domain.board.repository.BoardRepository;
+import propofol.tilservice.domain.board.repository.CommentRepository;
 import propofol.tilservice.domain.board.repository.RecommendRepository;
 import propofol.tilservice.domain.board.service.dto.BoardDto;
 import propofol.tilservice.domain.exception.NotFoundBoardException;
+import propofol.tilservice.domain.file.entity.Image;
+import propofol.tilservice.domain.file.repository.ImageRepository;
+import propofol.tilservice.domain.file.service.ImageService;
 
+import java.io.File;
 import java.util.List;
 
 @Slf4j
@@ -24,6 +29,9 @@ import java.util.List;
 public class BoardService {
     private final BoardRepository boardRepository;
     private final RecommendRepository recommendRepository;
+    private final ImageRepository imageRepository;
+    private final ImageService imageService;
+    private final CommentRepository commentRepository;
 
     // 페이지 단위로 게시글 가져오기
     public Page<Board> getPageBoards(Integer pageNumber) {
@@ -81,16 +89,46 @@ public class BoardService {
     /*********************/
 
     // 게시글 삭제 - 게시글에 저장된 createdBy와 마찬가지로 비교
+    @Transactional // transactional을 붙여줘야 변경감지로 삭제 가능!
     public String deleteBoard(Long boardId, String memberId) {
         Board findBoard = getBoard(boardId);
-        // 게시글 삭제 시 관련된 추천수 데이터도 함께 삭제해주기
-        recommendRepository.bulkDeleteAll(boardId);
 
-        if(findBoard.getCreatedBy().equals(memberId))
-            // JPA가 기본으로 제공하는 문법에서는 @Transactional 어노테이션을 붙이기 때문에 따로 설정해줄 필요가 없다.
-            boardRepository.delete(findBoard);
-        else
-            throw new NotMatchMemberException("권한이 없습니다.");
+        // 게시글 생성자가 아니라면 예외 발생
+        if(!findBoard.getCreatedBy().equals(memberId))
+            throw new NotMatchMemberException("글 작성자만 삭제할 수 있습니다.");
+
+        List<Image> images = findBoard.getImages();
+
+        // 게시글과 관련된 이미지들도 함께 삭제
+        if(images.size() != 0) {
+            imageRepository.deleteBulkImages(boardId);
+
+            // 로컬에 저장된 이미지 폴더들도 함께 삭제해주기
+            // 이미지 저장 디렉토리 주소
+            // 게시글에 대한 이미지가 있는지 판단하기 -> 있다면 디렉토리는 만들어져있을 것임
+            File deleteFolder = new File(imageService.findBoardPath() + "/" + boardId);
+
+            if(deleteFolder.exists()) {
+                // 해당 디렉토리에 있는 파일들 가져오기
+                File[] files = deleteFolder.listFiles();
+
+                // 각각 삭제
+                for (File file : files) {
+                    file.delete();
+                }
+                // 폴더 역시 함께 삭제
+                deleteFolder.delete();
+            }
+
+        }
+
+        // 게시글 삭제 시 관련된 추천수 데이터도 함께 삭제해주기
+        recommendRepository.deleteBulkRecommends(boardId);
+        // 댓글도 함께 삭제
+        commentRepository.deleteBulkComments(boardId);
+        // 게시글 삭제
+        boardRepository.delete(findBoard);
+
         return "ok";
     }
 
@@ -106,6 +144,11 @@ public class BoardService {
 
     /*******************/
 
+    // 게시글 제목 조회
+    public Page<Board> getPageByTitleKeyword(String keyword, Integer page) {
+        PageRequest pageRequest = PageRequest.of(page - 1, 10, Sort.by(Sort.Direction.DESC, "id"));
+        return boardRepository.findPageByTitleKeyword(keyword, pageRequest);
+    }
 
 
 
