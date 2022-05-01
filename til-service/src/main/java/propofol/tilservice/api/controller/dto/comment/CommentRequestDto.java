@@ -1,4 +1,4 @@
-package propofol.tilservice.api.controller.dto;
+package propofol.tilservice.api.controller.dto.comment;
 
 import lombok.Data;
 
