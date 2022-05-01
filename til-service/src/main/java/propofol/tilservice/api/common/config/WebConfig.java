@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import propofol.tilservice.api.common.resolver.JwtResolver;
 import propofol.tilservice.api.common.resolver.TokenResolver;
 
 import java.util.List;
@@ -13,12 +14,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
     private final TokenResolver tokenResolver;
+    private final JwtResolver jwtResolver;
 
-    // @Token 처리 리졸버를 추가해주기
+    // 만든 어노테이션 리졸버들 등록해주기!
     // 등록은 보통 스프링 시작할 때 진행된다!
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(tokenResolver);
+        resolvers.add(jwtResolver);
     }
     /*
         Argument Resolver 동작 방식
