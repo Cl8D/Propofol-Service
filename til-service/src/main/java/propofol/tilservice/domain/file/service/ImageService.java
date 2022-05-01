@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import propofol.tilservice.api.common.properties.FileProperties;
-import propofol.tilservice.api.controller.dto.ResponseImageDto;
-import propofol.tilservice.api.controller.dto.ResponseImagesDto;
+import propofol.tilservice.api.controller.dto.image.ImageResponseDto;
+import propofol.tilservice.api.controller.dto.image.ImagesResponseDto;
 import propofol.tilservice.domain.board.entity.Board;
 import propofol.tilservice.domain.exception.NotFoundFileException;
 import propofol.tilservice.domain.file.entity.Image;
@@ -116,8 +117,8 @@ public class ImageService {
 
     // 이미지 여러 개 전달
     // 이미지를 바이트로 변환하여 전달하기 - 프론트 단에서 가능할까...?
-    public ResponseImagesDto getImages(Long boardId) {
-        ResponseImagesDto responseImageDto = new ResponseImagesDto();
+    public ImagesResponseDto getImages(Long boardId) {
+        ImagesResponseDto responseImageDto = new ImagesResponseDto();
 
         // 게시글에 대한 경로 지정
         String path = findBoardPath();
@@ -148,8 +149,8 @@ public class ImageService {
     /************************/
 
     // 이미지 한 개 전달
-    public ResponseImageDto getImage(Long boardId, Long imageId) throws Exception {
-        ResponseImageDto responseImageDto = new ResponseImageDto();
+    public ImageResponseDto getImage(Long boardId, Long imageId) throws Exception {
+        ImageResponseDto imageResponseDto = new ImageResponseDto();
 
         String boardDir = fileProperties.getBoardDir();
         String path = findBoardPath();
@@ -184,9 +185,9 @@ public class ImageService {
             fileArray = outputStream.toByteArray();
 
             // 바이트 변환 결과
-            responseImageDto.setImage(fileArray);
+            imageResponseDto.setImage(fileArray);
             // 이미지 타입
-            responseImageDto.setImageType(image.getContentType());
+            imageResponseDto.setImageType(image.getContentType());
 
             inputStream.close();
             outputStream.close();
@@ -195,7 +196,7 @@ public class ImageService {
             throw new Exception("파일을 변환하는데 문제가 발생했습니다.");
         }
 
-        return responseImageDto;
+        return imageResponseDto;
     }
 
 
@@ -223,6 +224,14 @@ public class ImageService {
             throw new NotFoundFileException("파일을 찾을 수 없습니다.");
         });
         return image;
+    }
+
+    /************************/
+
+    // 게시글 삭제 시 이미지 벌크 삭제
+    @Transactional
+    public void deleteImages(Long boardId) {
+        imageRepository.deleteBulkImages(boardId);
     }
 
 }

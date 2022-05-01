@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import propofol.tilservice.api.controller.dto.ResponseImageDto;
-import propofol.tilservice.api.controller.dto.ResponseImagesDto;
+import propofol.tilservice.api.controller.dto.image.ImagesResponseDto;
 import propofol.tilservice.domain.file.entity.Image;
 import propofol.tilservice.domain.file.service.ImageService;
 
@@ -26,7 +25,7 @@ public class ImageController {
 
     // 게시글에 저장된 이미지 여러 개
     @GetMapping("/{boardId}")
-    public ResponseImagesDto getImages(@PathVariable(value = "boardId") Long boardId) {
+    public ImagesResponseDto getImages(@PathVariable(value = "boardId") Long boardId) {
         return imageService.getImages(boardId);
     }
 
