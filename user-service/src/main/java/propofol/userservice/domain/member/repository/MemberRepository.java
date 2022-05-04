@@ -17,4 +17,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     // 이메일을 통해 회원 존재 여부 확인 (Oauth 사용자)
     Member findExistByEmail(String email);
+
+    // refreshToken으로 멤버 찾기
+    Optional<Member> findByRefreshToken(String refreshToken);
 }
