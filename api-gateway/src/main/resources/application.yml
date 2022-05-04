@@ -52,7 +52,7 @@ spring:
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
-            - path=/user-service/api/v1/members/**
+            - Path=/user-service/api/v1/members/**
             - Method=GET,POST,PUT,PATCH,DELETE
           filters:
             - RemoveRequestHeader=Cookie
@@ -61,7 +61,7 @@ spring:
 
         # Til-service Routing
         - id: til-service
-          uri: lb://USER-SERVICE
+          uri: lb://TIL-SERVICE
           predicates:
             - Path=/til-service/api/v1/boards/**
             - Method=GET, POST, PUT, PATCH, DELETE
