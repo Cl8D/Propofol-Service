@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "name": "token",
+      "type": "propofol.tagservice.api.common.properties.JwtProperties",
+      "sourceType": "propofol.tagservice.api.common.properties.JwtProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "token.expiration-time",
+      "type": "java.lang.String",
+      "sourceType": "propofol.tagservice.api.common.properties.JwtProperties"
+    },
+    {
+      "name": "token.secret",
+      "type": "java.lang.String",
+      "sourceType": "propofol.tagservice.api.common.properties.JwtProperties"
+    },
+    {
+      "name": "token.type",
+      "type": "java.lang.String",
+      "sourceType": "propofol.tagservice.api.common.properties.JwtProperties"
+    }
+  ],
+  "hints": []
+}
