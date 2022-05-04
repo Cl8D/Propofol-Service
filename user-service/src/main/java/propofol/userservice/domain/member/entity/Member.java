@@ -37,7 +37,9 @@ public class Member extends BaseEntity{
     private String score; // 학점
 
     @Enumerated(value = EnumType.STRING)
-    private Authority authority;
+    private Authority authority; // 권한
+
+    private String refreshToken; // refreshToken
 
     @Builder(builderMethodName = "createMember")
     public Member(String email, String password, String username, String nickname,
@@ -51,6 +53,10 @@ public class Member extends BaseEntity{
         this.degree = degree;
         this.score = score;
         this.authority = authority;
+    }
+
+    public void changeRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     // 회원 정보 수정 - setter를 막았기 때문에 이런 식으로 업데이트를 해줘야 한다.
