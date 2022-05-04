@@ -31,9 +31,10 @@ public class PreFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authorization = request.getHeader("Authorization");
+        String refreshToken = request.getHeader("refresh-token");
 
-        // jwt 토큰이 담겨있고 bearer + 형식으로 시작한다면
-        if(authorization != null && authorization.startsWith("Bearer ")) {
+        // refreshToken이 없고(jwt 만료된 경우가 아님), jwt 토큰이 담겨있고 bearer + 형식으로 시작한다면
+        if(refreshToken == null && authorization != null && authorization.startsWith("Bearer ")) {
             // 순수 jwt token 뽑기
             String token = authorization.replaceAll("Bearer ", "").toString();
             // 토큰 검증을 통해 사용자 찾기
