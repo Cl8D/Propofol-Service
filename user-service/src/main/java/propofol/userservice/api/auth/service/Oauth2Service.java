@@ -175,7 +175,7 @@ public class Oauth2Service {
                     .nickname(null)
                     .username(null)
                     .score(null)
-                    .authority(Authority.USER_BASIC)
+                    .authority(Authority.ROLE_BASIC)
                     .build();
             memberService.saveMember(member);
         }
