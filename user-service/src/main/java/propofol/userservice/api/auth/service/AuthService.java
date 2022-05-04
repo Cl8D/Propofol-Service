@@ -62,21 +62,14 @@ public class AuthService {
             // https://codevang.tistory.com/268
             // 존재하지 않는 사용자일 때
             if(e instanceof AuthenticationServiceException) {
-                errorDto.setMessage("회원을 찾을 수 없습니다.");
-                errorDto.setStatus(HttpStatus.BAD_REQUEST.value());
-                // 상태도 함께 변경
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                errorDto.setErrorMessage("회원을 찾을 수 없습니다.");
             }
             // 패스워드가 일치하지 않을 때
             else if(e instanceof BadCredentialsException){
-                errorDto.setMessage("패스워드 오류!");
-                errorDto.setStatus(HttpStatus.BAD_REQUEST.value());
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                errorDto.setErrorMessage("패스워드 오류!");
             } else {
                 // 그 외의 다른 오류
-                errorDto.setMessage(e.getMessage());
-                errorDto.setStatus(HttpStatus.BAD_REQUEST.value());
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                errorDto.setErrorMessage(e.getMessage());
             }
             return errorDto;
         }

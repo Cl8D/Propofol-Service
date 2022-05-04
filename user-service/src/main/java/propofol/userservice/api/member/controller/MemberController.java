@@ -3,7 +3,9 @@ package propofol.userservice.api.member.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import propofol.userservice.api.auth.controller.dto.ResponseDto;
 import propofol.userservice.api.common.annotation.Token;
 import propofol.userservice.api.member.controller.dto.*;
 import propofol.userservice.api.member.service.MemberBoardService;
@@ -37,7 +39,8 @@ public class MemberController {
 //    @GetMapping("/users/{email}")
 //    public MemberResponseDto getMemberByEmail(@PathVariable String email) {
     @GetMapping
-    public MemberResponseDto getMemberByMemberId(@Token Long memberId) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getMemberByMemberId(@Token Long memberId) {
         // email 대신 pk 값을 활용해서 멤버를 조회할 수 있도록.
 //        Member findMember = memberService.getMemberByEmail(email);
 
@@ -46,20 +49,23 @@ public class MemberController {
         });
 
         // modelMapper를 활용하여 findMemberDto에 맞춰 객체 생성
-        return modelMapper.map(findMember, MemberResponseDto.class);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "회원 조회 성공!", modelMapper.map(findMember, MemberResponseDto.class));
     }
 
     /**********************/
 
     // 회원 정보 수정
     @PostMapping("/update")
-    public String updateMember(@RequestBody UpdateRequestDto dto, @Token Long memberId) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto updateMember(@RequestBody UpdateRequestDto dto, @Token Long memberId) {
         // 사용자의 회원 정보 수정을 UpdateMemberDto로 매핑
         // 즉, dto->dto 매핑이지만 api-domain 계층을 분리하기 위해서 이런 식으로 구성.
         UpdateMemberDto updateMemberDto = modelMapper.map(dto, UpdateMemberDto.class);
         memberService.updateMember(updateMemberDto, memberId);
 
-        return "ok";
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "회원 수정 성공!", "ok");
     }
 
     /*******************/
@@ -67,7 +73,8 @@ public class MemberController {
     // 자기 자신의 게시글 가져오기
     // localhost:8081/api/v1/members/myboards?page=1
     @GetMapping("/myboards")
-    public MemberBoardsResponseDto getMyBoards(
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getMyBoards(
             // 파라미터로 페이지 정보
             @RequestParam Integer page,
             // http-header 중 authorization의 내용을(요청된 헤더값을)
@@ -76,7 +83,8 @@ public class MemberController {
             @RequestHeader(name = "Authorization") String token) {
 
         // 최종적으로 responseDto (총 페이지, 게시글 수, 게시글 정보가 담김)정보를 리턴받아서 정보를 뿌려준다.
-        return memberBoardService.getMyBoards(page, token);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "회원 게시글 조회 성공!", memberBoardService.getMyBoards(page, token));
     }
 
     /*******************/
@@ -85,7 +93,8 @@ public class MemberController {
     // DTO -> year, List<StreakDetailResponseDto>
     // StreakDetailResponseDto -> workingDate, working
     @GetMapping("/streak")
-    public StreakResponseDto getStreaks(@Token Long memberId) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getStreaks(@Token Long memberId) {
         StreakResponseDto responseDto = new StreakResponseDto();
 
         // 현재 날짜의 년도 가져오기
@@ -108,7 +117,8 @@ public class MemberController {
 
         /** TODO 본 프로젝트에서도 set으로 설정해주기 */
         responseDto.setStreaks(responseDtoStreaks);
-        return responseDto;
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "회원 스트릭 조회 성공!", responseDto);
     }
 
     /*******************/
@@ -116,10 +126,14 @@ public class MemberController {
     // 스트릭 저장하기
     // requestDto -> date / working (오늘 했는지 안 했는지)
     @PostMapping("/streak")
-    public String saveStreak(@Token Long memberId,
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto saveStreak(@Token Long memberId,
                            @RequestBody StreakRequestDto requestDto) {
 
-        return streakService.saveStreak(memberId, requestDto);
+        streakService.saveStreak(memberId, requestDto);
+
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "회원 스트릭 저장 성공!", "ok");
     }
 
 }

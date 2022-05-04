@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import propofol.userservice.api.auth.controller.dto.LoginRequestDto;
+import propofol.userservice.api.auth.controller.dto.ResponseDto;
 import propofol.userservice.api.auth.controller.dto.UpdatePasswordRequestDto;
 import propofol.userservice.api.auth.service.AuthService;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
@@ -40,10 +41,18 @@ public class AuthController {
 
     // 로그인
     @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
     // @Validated를 통해 유효성 검사
-    public Object login(@Validated @RequestBody LoginRequestDto loginDto,
-                        HttpServletResponse response) {
-        return authService.propofolLogin(loginDto, response);
+    public ResponseDto login(@Validated @RequestBody LoginRequestDto loginDto,
+                             HttpServletResponse response) {
+        Object result = authService.propofolLogin(loginDto, response);
+        if (result instanceof ErrorDto) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "로그인 실패!", result);
+        }
+        else {
+            return new ResponseDto<>(HttpStatus.OK.value(), "success", "로그인 성공!", result);
+        }
     }
 
     /********************/
@@ -54,7 +63,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     // @validated를 통해 원하는 속성에 대해서만 유효성 검사 가능
     // requestBody로 회원 가입 시 해당 멤버 정보 저장
-    public Object saveMember(@Validated @RequestBody SaveMemberDto saveMemberDto, HttpServletResponse response){
+    public ResponseDto saveMember(@Validated @RequestBody SaveMemberDto saveMemberDto, HttpServletResponse response){
         ErrorDto errorDto = new ErrorDto();
 
         // 이메일, 닉네임에 대한 중복 체크
@@ -63,11 +72,10 @@ public class AuthController {
         // 만약 중복이 존재한다면
         if(errorDto.getErrors().size() != 0){
             // errorDto 객체를 통해 오류 정보 저장
-            errorDto.setStatus(HttpStatus.BAD_REQUEST.value());
-            errorDto.setMessage("중복 오류!");
+            errorDto.setErrorMessage("중복 오류!");
             // status 상태 설정
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return errorDto;
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "회원 저장 실패!", errorDto);
         }
 
         // 회원가입 받은 string 형 생년월일 정보를 날짜 형태로 변경
@@ -80,7 +88,7 @@ public class AuthController {
         // 회원 가입 진행
         memberService.saveMember(member);
 
-        return "ok";
+        return new ResponseDto<>(HttpStatus.CREATED.value(), "success", "회원 저장 성공!", "ok");
     }
 
     private Member createMember(SaveMemberDto saveMemberDto, LocalDate date) {
@@ -116,9 +124,10 @@ public class AuthController {
 
     // 비밀번호 변경 기능
     @PostMapping("/updatePassword")
-    public String updatePassword(@RequestBody UpdatePasswordRequestDto requestDto) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto updatePassword(@RequestBody UpdatePasswordRequestDto requestDto) {
         memberService.updatePassword(requestDto.getEmail(), requestDto.getPassword());
-        return "ok";
+        return new ResponseDto<>(HttpStatus.OK.value(), "success", "비밀번호 변경 성공!", "ok");
     }
 
     /********************/
@@ -135,16 +144,17 @@ public class AuthController {
 
     // 클라이언트는 refresh token 요청 시 무조건 user-service/auth/refresh로 보내야 함!
     @GetMapping("/refresh")
-    public Object checkRefreshToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                    @RequestHeader("refresh-token") String refreshToken) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto checkRefreshToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                    @RequestHeader("refresh-token") String refreshToken,
+                                         HttpServletResponse response) {
         Member findMember = memberService.getRefreshMember(refreshToken);
 
         // access-token이 만료되었는지 확인
         // 만약 아직 JWT가 유효하다면
         if(jwtProvider.isJwtValid(token)) {
-            // responseEntity = HttpRequest에 대한 응답 데이터를 포함하는 클래스.
-            // = HttpStatus + HttpHeaders + HttpBody
-            return new ResponseEntity("Valid Access-Token!", HttpStatus.BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "토큰 재발급 실패(JWT 유효)", "valid access-token");
         }
 
         // Refresh-token의 유효시간이 지나지 않았는지 확인
@@ -155,11 +165,14 @@ public class AuthController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             TokenDto tokenDto = jwtProvider.createJwt(authentication);
             memberService.changeRefreshToken(findMember, refreshToken);
-            return tokenDto;
+            /** TODO 프로젝트 오타 발견 - 수정 필요 */
+            return new ResponseDto<>(HttpStatus.OK.value(), "success", "토큰 재발급 성공!", tokenDto);
 
         }
         // 아니라면 에러.
-        return new ResponseEntity("Please Re-Login!", HttpStatus.BAD_REQUEST);
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail",
+                "토큰 재발급 실패!", "Please Re-login.");
     }
 
 }

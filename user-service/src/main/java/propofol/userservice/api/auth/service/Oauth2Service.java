@@ -69,7 +69,7 @@ public class Oauth2Service {
 
         // response에 대한 상태 코드 검증
         if(tokenResponse.getStatusCode() != HttpStatus.OK)
-            throw new RuntimeException("로그인 오류가 발생하였습니다!");
+            throw new RuntimeException("카카오 로그인 오류가 발생하였습니다!");
 
         // response의 응답 결과 확인
         KakaoTokenResponseDto responseBody = tokenResponse.getBody();
