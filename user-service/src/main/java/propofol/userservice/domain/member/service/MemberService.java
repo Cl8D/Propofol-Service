@@ -29,4 +29,10 @@ public interface MemberService {
 
     // 비밀번호 변경
     void updatePassword(String email, String password);
+
+    // refreshToken을 가진 member 찾기
+    Member getRefreshMember(String refreshToken);
+
+    // refreshToken 변경
+    void changeRefreshToken(Member findMember, String refreshToken);
 }
