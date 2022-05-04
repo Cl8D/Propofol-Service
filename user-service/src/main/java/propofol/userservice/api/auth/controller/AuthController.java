@@ -2,7 +2,11 @@ package propofol.userservice.api.auth.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +15,8 @@ import propofol.userservice.api.auth.controller.dto.UpdatePasswordRequestDto;
 import propofol.userservice.api.auth.service.AuthService;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
+import propofol.userservice.api.common.jwt.JwtProvider;
+import propofol.userservice.api.common.jwt.TokenDto;
 import propofol.userservice.api.member.controller.dto.SaveMemberDto;
 import propofol.userservice.domain.member.entity.Authority;
 import propofol.userservice.domain.member.entity.Member;
@@ -30,6 +36,7 @@ public class AuthController {
     private final AuthService authService;
     private final MemberService memberService;
     private final BCryptPasswordEncoder encoder;
+    private final JwtProvider jwtProvider;
 
     // 로그인
     @PostMapping("/login")
@@ -114,5 +121,45 @@ public class AuthController {
         return "ok";
     }
 
+    /********************/
+
+    // refresh Token 요청 URL
+    // 흐름)
+    // JWT -> 요청할 때 이걸로만 진행. 유효시간 30분. Refresh Token -> 유효시간 하루, DB에 (Redis 사용 - 서버 종료되면 날아가게 하기 위해) 저장되어 있음.
+    // 클라이언트가 JWT(access token)으로 요청을 하면 api-gateway에서는 인증을 진행한 다음 요청 서비스에 넘긴다.
+    // 이때, JWT가 만료되었으면 서비스는 다시 클라이언트에게 refresh token을 보내라고 요청하며,
+    // 클라이언트는 이때 JWT + refresh Token을 함께 보내준다.
+    // 그럼 api-gateway는 refresh token이 있으면 인증을 하지 않고 서비스로 넘기게 되며 (아예 filter 자체를 돌지 않는다),
+    // 이때 서비스는 DB에 저장된 refresh token값과 일치하는지 비교 + access token 만료 여부 확인 + refresh token의 만료 여부 확인을 끝난 뒤 모두 통과하면
+    // 새로운 토큰을 만들어서 refresh, JWT토큰을 함께 리턴해준다.
+
+    // 클라이언트는 refresh token 요청 시 무조건 user-service/auth/refresh로 보내야 함!
+    @GetMapping("/refresh")
+    public Object checkRefreshToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                    @RequestHeader("refresh-token") String refreshToken) {
+        Member findMember = memberService.getRefreshMember(refreshToken);
+
+        // access-token이 만료되었는지 확인
+        // 만약 아직 JWT가 유효하다면
+        if(jwtProvider.isJwtValid(token)) {
+            // responseEntity = HttpRequest에 대한 응답 데이터를 포함하는 클래스.
+            // = HttpStatus + HttpHeaders + HttpBody
+            return new ResponseEntity("Valid Access-Token!", HttpStatus.BAD_REQUEST);
+        }
+
+        // Refresh-token의 유효시간이 지나지 않았는지 확인
+        // + DB에 저장된 refresh-token과 일치하는지 확인
+        if(jwtProvider.isRefreshTokenValid(refreshToken) &&
+                findMember.getRefreshToken().equals(refreshToken)) {
+            // 토큰 재생성
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            TokenDto tokenDto = jwtProvider.createJwt(authentication);
+            memberService.changeRefreshToken(findMember, refreshToken);
+            return tokenDto;
+
+        }
+        // 아니라면 에러.
+        return new ResponseEntity("Please Re-Login!", HttpStatus.BAD_REQUEST);
+    }
 
 }
