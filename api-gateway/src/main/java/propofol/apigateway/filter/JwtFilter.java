@@ -3,6 +3,7 @@ package propofol.apigateway.filter;
 // api-gateway는 클라이언트가 가져온 jwt 토큰을 검증하게 된다.
 // 일종의 출입문 같은 역할로, 여기서 인증된 사용자만 그 다음 service 계층으로 갈 수 있는 형태가 되는 것.
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -64,8 +66,11 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
 
 
             // jwt token이 오기는 했으나, 해당 jwt token이 유효한지 확인하기
-            if(!isValid(token, exchange)) {
-                return onError(exchange, "Not Validate Jwt Token", HttpStatus.UNAUTHORIZED);
+            String message = isValid(token, headers);
+
+            // 유효하지 않을 경우 error
+            if(StringUtils.hasText(message)) {
+                return onError(exchange, message, HttpStatus.BAD_REQUEST);
             }
 
             // 성공적으로 검증 완료라면
@@ -74,9 +79,7 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
         });
     }
 
-    private boolean isValid(String token, ServerWebExchange exchange) {
-        String subject = null;
-
+    private String isValid(String token, HttpHeaders headers) {
         // application-secret.yml에 저장된 서버의 비밀키값 가져오기
         String secretKey = env.getProperty("token.secret");
         byte[] bytes = secretKey.getBytes(StandardCharsets.UTF_8);
@@ -85,15 +88,26 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
 
         // JWT 토큰 검증 로직
         JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-        Claims claims = jwtParser.parseClaimsJwt(token).getBody();
-        // jwt 토큰 생성 시 지정한 subject 값 가져오기 (우리는 pk값으로 지정하였음)
-        // 성공적으로 값이 반환되었다는 것은 서버의 키값으로 jwt 토큰이 암호화되었음을 의미하는 것이니까.
-        subject = claims.getSubject();
+        String subject = null;
 
-        if(subject == null)
-            return false;
+        try {
+            Claims claims = jwtParser.parseClaimsJwt(token).getBody();
+            // jwt 토큰 생성 시 지정한 subject 값 가져오기 (우리는 pk값으로 지정하였음)
+            // 성공적으로 값이 반환되었다는 것은 서버의 키값으로 jwt 토큰이 암호화되었음을 의미하는 것이니까.
+            subject = claims.getSubject();
+        } catch (Exception e) {
+            // jwt 만료 시 여기서 catch 할 수 있도록! -> refreshToken 요청
+            if(e instanceof ExpiredJwtException){
+                return "Please RefreshToken.";
+            }
+        }
 
-        return true;
+        // 유효하지 않을 경우
+        if(!StringUtils.hasText(subject))
+            return "Not Validate Jwt Token";
+
+        // 아무 이상도 없을 경우 -> 유효함!
+        return null;
     }
 
     // Mono는 0~1개의 결과를 처리하기 위한 Reactor 객체이다. (여러 개는 Flux 사용)
@@ -119,7 +133,7 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
 
 
     // Configuration 속성들을 넣어준다. (Global Filter에서 활용하는 것 같다)
-    static class Config {
+    public static class Config {
 
     }
 }
