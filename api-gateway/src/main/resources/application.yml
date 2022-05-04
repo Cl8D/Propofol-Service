@@ -26,6 +26,16 @@ spring:
               # Url Path : localhost:8080/user-service/api/v1 => localhost:8080/api/v1
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
 
+        # (refresh token request)
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/auth/refresh
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+
         # (Oauth2 Login)
         - id: user-service
           uri: lb://USER-SERVICE
@@ -36,6 +46,8 @@ spring:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
 
+
+        ################
         # Jwt Filter Necessary (etc...)
         - id: user-service
           uri: lb://USER-SERVICE
@@ -46,6 +58,17 @@ spring:
             - RemoveRequestHeader=Cookie
             - JwtFilter
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+
+        # Til-service Routing
+        - id: til-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/til-service/api/v1/boards/**
+            - Method=GET, POST, PUT, PATCH, DELETE
+          filters:
+            - RemoveRequestHeader=Cookie
+            - JwtFilter
+            - RewritePath=/til-service/(?<segment>.*), /$\{segment}
 
 
 eureka:
