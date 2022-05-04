@@ -28,6 +28,8 @@ public class ExceptionAdviceController {
         return null;
     }
 
+    /******************/
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     // 멤버를 찾지 못했을 때
@@ -35,6 +37,8 @@ public class ExceptionAdviceController {
         ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
         return errorDto;
     }
+
+    /******************/
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -50,6 +54,8 @@ public class ExceptionAdviceController {
         return errorDto;
     }
 
+    /******************/
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     // 잘못된 요청을 보냈을 때
@@ -57,6 +63,18 @@ public class ExceptionAdviceController {
         ErrorDto errorDto = createError("잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
         return errorDto;
     }
+
+    /******************/
+
+    // refreshToken이 만료되었을 때
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto ExpiredRefreshTokenException(ExpiredRefreshTokenException e){
+        ErrorDto errorDto = createError(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return errorDto;
+    }
+
+    /******************/
 
     private ErrorDto createError(String errorMessage, HttpStatus status) {
         ErrorDto errorDto = new ErrorDto();
