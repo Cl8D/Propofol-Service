@@ -9,9 +9,15 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import propofol.userservice.api.auth.controller.dto.LoginRequestDto;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
 import propofol.userservice.api.common.jwt.JwtProvider;
+import propofol.userservice.api.common.jwt.TokenDto;
+import propofol.userservice.domain.exception.NotFoundMember;
+import propofol.userservice.domain.member.entity.Member;
+import propofol.userservice.domain.member.repository.MemberRepository;
+import propofol.userservice.domain.member.service.MemberService;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,10 +28,12 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthService {
     // JWT 토큰 생성기
     private final JwtProvider jwtProvider;
-
     // Authentication 객체를 받아 인증하고, 인증되었다면 Authentication 객체를 돌려주는 메서드를 구현하도록 하는 인터페이스
     private final AuthenticationManager authenticationManager;
+    private final MemberService memberService;
 
+    // refreshToken 정보를 DB에 반영하기 위해 @Transactional 걸어주기.
+    @Transactional
     public Object propofolLogin(LoginRequestDto loginDto, HttpServletResponse response) {
 
         // username, password를 쓰는 form 기반 인증을 처리하는 필터 (아이디-패스워드 인증 담당)
@@ -41,8 +49,10 @@ public class AuthService {
         try {
             // token을 활용하여 인증이 성공하면 authenticate() 메서드의 리턴 값인 Authentication 객체를 반환한다.
             Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-            // 객체를 활용하여 jwt 토큰을 생성해준다.
-            return jwtProvider.createJwt(authenticate);
+            // 객체를 활용하여 jwt 토큰을 생성해준다. + refreshToken도 함께 DB에 저장하기
+            TokenDto tokenDto = jwtProvider.createJwt(authenticate);
+            saveRefreshToken(authenticate, tokenDto);
+            return tokenDto;
 
         } catch (Exception e) {
             // 만약 인증을 실패하면
@@ -70,6 +80,19 @@ public class AuthService {
             }
             return errorDto;
         }
+    }
+
+    /*****************************/
+
+    private void saveRefreshToken(Authentication authentication, TokenDto tokenDto) {
+        String refreshToken = tokenDto.getRefreshToken();
+        // DB의 id 값이 저장되어 있음.
+        Long id = Long.valueOf(authentication.getName());
+        // id를 통해 멤버 검색
+        Member findMember = memberService.getMemberById(id).orElseThrow(() -> {
+            throw new NotFoundMember("회원을 찾을 수 없습니다.");
+        });
+        findMember.changeRefreshToken(refreshToken);
     }
 }
 
