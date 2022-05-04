@@ -1,9 +1,6 @@
 package propofol.userservice.api.common.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import propofol.userservice.api.common.exception.ExpiredRefreshTokenException;
 import propofol.userservice.api.common.properties.JwtProperties;
 
 import javax.annotation.PostConstruct;
@@ -80,6 +78,8 @@ public class JwtProvider {
     }
 
 
+    /*************************/
+
 
     // 유저 정보를 활용하여 accessToken, refreshToken을 생성한다.
     public TokenDto createJwt(Authentication authentication) {
@@ -121,13 +121,29 @@ public class JwtProvider {
 //                .type(type)
                 .type(jwtProperties.getType())
                 .accessToken(token)
-                .refreshToken(null)
-                .expirationDate(expirationDate.getTime())
+                .refreshToken(createRefreshToken())
                 .build();
 
         // https://wildeveloperetrain.tistory.com/58
         // 나중에 참고하기 좋읗 것 같아서 넣어둠
     }
+
+
+    /*************************/
+
+    // refresh-token 생성 함수
+    public String createRefreshToken() {
+        // refresh-token의 유효기간 설정 = 하루(config에서 읽어온 정보)
+        Date refreshExpirationTime = new Date(System.currentTimeMillis() +
+                Long.parseLong(jwtProperties.getRefreshExpirationTime()));
+
+        return Jwts.builder()
+                .setExpiration(refreshExpirationTime)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    /*************************/
 
     // jwt Token 정보를 통해서 사용자가 누구인지 알기 위한 함수
     public Authentication getUserInfo(String token) {
@@ -149,4 +165,62 @@ public class JwtProvider {
         // user 객체를 활용하여 token 생성
         return new UsernamePasswordAuthenticationToken(principal, "", at);
     }
+
+    /*************************/
+
+    // JWT 토큰이 만료되었는지 체크
+    // 유효하면 true, 만료되면 false
+    public boolean isJwtValid(String bearerToken) {
+        try {
+            // bearer 제거
+            String token = bearerToken.replaceAll("Bearer ", "").toString();
+            // 토큰 검증
+            JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
+            Claims claims = jwtParser.parseClaimsJwt(token).getBody();
+
+            // 토큰의 만료기간이 현재 날짜보다 더 이전이라면 = 만료되었음
+            // 이후라면 = 만료되지 않았음 (유효함)
+            boolean isNotValid = claims.getExpiration().before(new Date());
+            if(isNotValid)
+                return false;
+            else
+                return true;
+
+        } catch (Exception e) {
+            // jwt 토큰이 만료되면 기본적으로 exception이 처리되기 때문에 try-catch로 찹아주기
+            if(e instanceof ExpiredJwtException) {
+                // 예외 발생 = 토큰이 만료되었음을 의미함
+                return false;
+            }
+        }
+        return false;
+    }
+
+
+    /*************************/
+
+    // refresh-token의 유효성 확인
+    public boolean isRefreshTokenValid(String refreshToken) {
+        try {
+            JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
+            Claims claims = jwtParser.parseClaimsJwt(refreshToken).getBody();
+            boolean isNotValid = claims.getExpiration().before(new Date());
+
+            if(isNotValid)
+                return false;
+            else
+                return true;
+
+        } catch (Exception e) {
+            if (e instanceof ExpiredJwtException) {
+                // 만약 refresh-token이 만료되었으면 예외 발생.
+                throw new ExpiredRefreshTokenException("Please Re-Login!");
+            }
+        }
+
+        return false;
+    }
+
+
+
 }
