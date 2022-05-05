@@ -157,6 +157,7 @@ public class AuthController {
             return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "토큰 재발급 실패(JWT 유효)", "valid access-token");
         }
 
+
         // Refresh-token의 유효시간이 지나지 않았는지 확인
         // + DB에 저장된 refresh-token과 일치하는지 확인
         if(jwtProvider.isRefreshTokenValid(refreshToken) &&
@@ -172,7 +173,7 @@ public class AuthController {
         // 아니라면 에러.
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail",
-                "토큰 재발급 실패!", "Please Re-login.");
+                "토큰 재발급 실패!", "Please Re-login!!!!");
     }
 
 }

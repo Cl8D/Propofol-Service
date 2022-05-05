@@ -5,7 +5,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,7 +16,6 @@ import propofol.userservice.api.common.exception.ExpiredRefreshTokenException;
 import propofol.userservice.api.common.properties.JwtProperties;
 
 import javax.annotation.PostConstruct;
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Arrays;
@@ -174,13 +172,17 @@ public class JwtProvider {
         try {
             // bearer 제거
             String token = bearerToken.replaceAll("Bearer ", "").toString();
+
             // 토큰 검증
             JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-            Claims claims = jwtParser.parseClaimsJwt(token).getBody();
+
+            // jws = 서명된 jwt (키를 통해서 만들어진)
+            Claims claims = jwtParser.parseClaimsJws(token).getBody();
 
             // 토큰의 만료기간이 현재 날짜보다 더 이전이라면 = 만료되었음
             // 이후라면 = 만료되지 않았음 (유효함)
             boolean isNotValid = claims.getExpiration().before(new Date());
+
             if(isNotValid)
                 return false;
             else
@@ -203,7 +205,7 @@ public class JwtProvider {
     public boolean isRefreshTokenValid(String refreshToken) {
         try {
             JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-            Claims claims = jwtParser.parseClaimsJwt(refreshToken).getBody();
+            Claims claims = jwtParser.parseClaimsJws(refreshToken).getBody();
             boolean isNotValid = claims.getExpiration().before(new Date());
 
             if(isNotValid)
