@@ -32,11 +32,4 @@ public class SaveMemberDto {
     @NotEmpty(message = "빈 값을 허용하지 않습니다.")
     @Pattern(regexp = "^[0-9]{3}-[0-9]{3,4}-[0-9]{4}$", message = "올바른 전화번호 형식이 아닙니다.")
     private String phoneNumber;
-
-    @NotEmpty(message = "빈 값을 허용하지 않습니다.")
-    @Pattern(regexp = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", message = "올바른 날짜 형식이 아닙니다.")
-    private String memberBirth;
-
-    private String degree;
-    private String score;
 }
