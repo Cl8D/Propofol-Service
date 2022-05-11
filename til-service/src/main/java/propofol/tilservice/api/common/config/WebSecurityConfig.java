@@ -25,13 +25,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PreFilter preFilter;
 
-    // 빈 등록
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
