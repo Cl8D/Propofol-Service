@@ -1,4 +1,4 @@
-package propofol.userservice.api.common.exception;
+package propofol.userservice.api.common.exception.advice;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import propofol.userservice.api.auth.controller.dto.ResponseDto;
+import propofol.userservice.api.common.exception.ExpiredRefreshTokenException;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
 import propofol.userservice.domain.exception.NotFoundMember;
