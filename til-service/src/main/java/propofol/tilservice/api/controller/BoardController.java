@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import propofol.tilservice.api.common.annotation.Token;
 import propofol.tilservice.api.common.exception.BoardCreateException;
 import propofol.tilservice.api.common.exception.BoardUpdateException;
 import propofol.tilservice.api.common.properties.FileProperties;
+import propofol.tilservice.api.controller.dto.ResponseDto;
 import propofol.tilservice.api.controller.dto.board.BoardCreateRequestDto;
 import propofol.tilservice.api.controller.dto.board.BoardPageResponseDto;
 import propofol.tilservice.api.controller.dto.board.BoardResponseDto;
@@ -59,7 +61,8 @@ public class BoardController {
     // 페이지별로 게시글 가져오기 (쿼리 파라미터로 받아오기. ?page=1)
     // 응답 결과) 총 페이지 수 + 게시글 수 + 게시글 목록 전달하기
     @GetMapping
-    public BoardPageResponseDto getPageBoards(@RequestParam Integer page) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getPageBoards(@RequestParam Integer page) {
         // 페이지별로 게시글 목록 가져오기
         Page<Board> pageBoards = boardService.getPageBoards(page);
 
@@ -77,7 +80,8 @@ public class BoardController {
                     modelMapper.map(board, BoardResponseDto.class));
         });
 
-        return boardPageResponseDto;
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 페이지 조회 성공!", boardPageResponseDto);
     }
 
     /**************************/
@@ -85,7 +89,8 @@ public class BoardController {
     // 게시판 글 쓰기 (파일 없이 단순 글쓰기)
     // @NotEmpty 등을 적용하기 위해서 @Validated 붙여주기
     @PostMapping
-    public String createBoard(@Validated @RequestBody BoardCreateRequestDto requestDto,
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto createBoard(@Validated @RequestBody BoardCreateRequestDto requestDto,
                               @Jwt String token) {
         // domain 단의 board entity로 접근할 수 있게 하기 위해서 BoardDto 형태로 변경
         BoardDto boardDto = modelMapper.map(requestDto, BoardDto.class);
@@ -98,7 +103,8 @@ public class BoardController {
         } catch (Exception e) {
             throw new BoardCreateException("게시글 생성 시 오류가 발생하였습니다.");
         }
-        return "ok";
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 생성 성공!", "ok");
     }
 
     /************************/
@@ -107,7 +113,8 @@ public class BoardController {
     // 게시글 번호와 수정 내용이 함께 넘어오게 된다.
     // 게시글 작성자만 글 수정을 할 수 있도록 @Token 정보를 활용한다.
     @PostMapping("/{boardId}")
-    public String updateBoard(@PathVariable Long boardId,
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto updateBoard(@PathVariable Long boardId,
                               @RequestBody BoardUpdateRequestDto requestDto,
                               @Token String memberId,
                               @Jwt String token) {
@@ -121,7 +128,8 @@ public class BoardController {
         } catch (Exception e) {
             throw new BoardUpdateException("게시글 수정 시 오류가 발생하였습니다.");
         }
-        return "ok";
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 수정 성공!", "ok");
     }
 
     /*******************/
@@ -129,8 +137,11 @@ public class BoardController {
     // 게시글 글 정보 가져오기 (게시글 상세 보기)
     // 응답 정보) 게시글의 고유한 UUID + 글 제목 + 내용 + 추천 수 + 공개 여부
     @GetMapping("/{boardId}")
-    public BoardResponseDto getBoardInfo(@PathVariable Long boardId) {
-        return createBoardResponse(boardId);
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getBoardInfo(@PathVariable Long boardId) {
+        Board board = boardService.getBoard(boardId);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 조회 성공!", createBoardResponse(boardId));
     }
 
     private BoardResponseDto createBoardResponse(Long boardId) {
@@ -142,7 +153,6 @@ public class BoardController {
 
     private BoardResponseDto getBoardResponseDto(Board board) {
         BoardResponseDto boardResponseDto = new BoardResponseDto();
-
         boardResponseDto.setBoardUUID(board.getId());
         boardResponseDto.setTitle(board.getTitle());
         boardResponseDto.setContent(board.getContent());
@@ -155,8 +165,10 @@ public class BoardController {
 
     // 게시글 글 삭제 - 역시 게시글 작성자만 가능하다.
     @DeleteMapping("/{boardId}")
-    public String deleteBoard(@PathVariable Long boardId, @Token String memberId) {
-        return boardService.deleteBoard(boardId, memberId);
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto deleteBoard(@PathVariable Long boardId, @Token String memberId) {
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 삭제 성공!", boardService.deleteBoard(boardId, memberId));
     }
 
 
@@ -166,7 +178,8 @@ public class BoardController {
     // user-service의 FeignClient를 통해 요청이 들어왔을 때 처리되는 메서드
     // 응답 결과로 총 페이지수, 게시글 수, 게시글 리스트가 담긴 BoardListResponseDto를 넘겨주게 된다. (-> user-service로)
     @GetMapping("/myBoards")
-    public BoardPageResponseDto getPageBoardsByMemberId(@RequestParam Integer page, @Token String memberId) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getPageBoardsByMemberId(@RequestParam Integer page, @Token String memberId) {
         BoardPageResponseDto boardPageResponseDto = new BoardPageResponseDto();
         Page<Board> pageBoards = boardService.getPagesByMemberId(page, memberId);
         boardPageResponseDto.setTotalCount(pageBoards.getTotalElements());
@@ -174,7 +187,8 @@ public class BoardController {
         pageBoards.forEach(board -> {
             boardPageResponseDto.getBoards().add(modelMapper.map(board, BoardResponseDto.class));
         });
-        return boardPageResponseDto;
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 조회 성공!", boardPageResponseDto);
     }
 
     /*************/
@@ -183,9 +197,11 @@ public class BoardController {
     // 게시글의 id를 받아서 해당 게시글의 추천수를 조절해주기
     // 한 번 클릭하면 추천 업, 한 번 더 클릭하면 추천 다운.
     @PostMapping("/recommend/{boardId}")
-    public String createRecommend(@PathVariable(value="boardId") Long boardId,
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto createRecommend(@PathVariable(value="boardId") Long boardId,
                                   @Token String memberId) {
-        return recommendService.createRecommend(memberId, boardId);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "추천 생성 성공!", recommendService.createRecommend(memberId, boardId));
     }
 
     /*********************/
@@ -198,7 +214,8 @@ public class BoardController {
     // imageService에서 board.addImage(image);로 변경감지가 발생하였으면, 해당 메서드가 종료하면서 flush 되면서
     // board + image(cascade)의 변경 내용이 함께 db에 반영된다.
     @Transactional
-    public String createBoardWithFiles(
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto createBoardWithFiles(
             // @RequestParam을 통해서 받는다. 여러 개의 파일이 들어갈 수 있기 때문에
             @RequestParam("file") List<MultipartFile> files,
             @RequestParam("title") String title,
@@ -227,27 +244,32 @@ public class BoardController {
             throw new BoardCreateException("게시글 생성 시 오류가 발생하였습니다.");
         }
 
-        return "ok";
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 생성 성공!", "ok");
     }
 
     /*********************/
 
     // 부모 댓글 (대댓글이 존재하지 않는 가장 첫 댓글에 대해)
     @PostMapping("/{boardId}/comment")
-    public String createParentComment(@PathVariable(value = "boardId") Long boardId,
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto createParentComment(@PathVariable(value = "boardId") Long boardId,
                                       @Validated @RequestBody CommentRequestDto requestDto,
                                       @Jwt String token) {
-        return commentService.saveParentComment(requestDto, boardId, token);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "댓글 생성 성공!", commentService.saveParentComment(requestDto, boardId, token));
     }
 
     // 자식 댓글 (대댓글, 하나의 부모 댓글에 대해 여러 자식 댓글이 달린다.)
     // 에브리타임처럼 부모 댓글 밑에 하위로 여러 대댓글이 있는 (깊이 동일) 형태로 구현
     @PostMapping("/{boardId}/{parentId}/comment")
-    public String createChildComment(@PathVariable(value = "boardId") Long boardId,
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto createChildComment(@PathVariable(value = "boardId") Long boardId,
                                      @PathVariable(value = "parentId") Long parentId,
                                      @Validated @RequestBody CommentRequestDto requestDto,
                                      @Jwt String token) {
-        return commentService.saveChildComment(requestDto, boardId, parentId, token);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "대댓글 생성 성공!", commentService.saveChildComment(requestDto, boardId, parentId, token));
     }
 
     /*********************/
@@ -256,9 +278,11 @@ public class BoardController {
     // 응답 정보 -> 게시글Id, 총 댓글 페이징 수, 댓글 수, 댓글DTO 리스트
     //  댓글 DTO -> id, 닉네임, 내용, 그룹id
     @GetMapping("/{boardId}/comments")
-    public CommentPageResponseDto getComments(@PathVariable(value = "boardId") Long boardId,
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getComments(@PathVariable(value = "boardId") Long boardId,
                                               @RequestParam("page") Integer page) {
-        return getCommentPageResponseDto(boardId, page);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "댓글 조회 성공!", getCommentPageResponseDto(boardId, page));
     }
 
     private CommentPageResponseDto getCommentPageResponseDto(Long boardId, Integer page) {
@@ -281,11 +305,13 @@ public class BoardController {
 
     // 게시글 제목 검색 기능
     @GetMapping("/search/title/{keyword}")
-    public BoardPageResponseDto findBoardByTitle(
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto findBoardByTitle(
             @PathVariable(value = "keyword") String keyword,
             @RequestParam(value = "page") Integer page) {
         Page<Board> pageBoards = boardService.getPageByTitleKeyword(keyword, page);
-        return getBoardPageResponseDto(pageBoards);
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "게시글 제목 조회 성공!", getBoardPageResponseDto(pageBoards));
     }
 
     private BoardPageResponseDto getBoardPageResponseDto(Page<Board> pageBoards) {

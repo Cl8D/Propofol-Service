@@ -10,10 +10,8 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ErrorDto {
-    // 에러 상태 코드
-    private Integer status;
     // 메시지
-    private String message;
+    private String errorMessage;
     // 에러가 여러 개일 경우 리스트로 관리
     private List<ErrorDetailDto> errors = new ArrayList<>();
 }
