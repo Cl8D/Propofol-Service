@@ -2,6 +2,7 @@ package propofol.apigateway.filter;
 
 // api-gateway는 클라이언트가 가져온 jwt 토큰을 검증하게 된다.
 // 일종의 출입문 같은 역할로, 여기서 인증된 사용자만 그 다음 service 계층으로 갈 수 있는 형태가 되는 것.
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtParser;
@@ -14,11 +15,13 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
+import propofol.apigateway.filter.dto.ResponseDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -114,8 +117,18 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
     private Mono<Void> onError(ServerWebExchange exchange, String errorMessage, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
         try {
-            byte[] bytes = errorMessage.getBytes(StandardCharsets.UTF_8);
+//            byte[] bytes = errorMessage.getBytes(StandardCharsets.UTF_8);
             response.setStatusCode(httpStatus);
+
+            // 응답 형태 맞춰주기 - 1) json 형태로
+            response.getHeaders().set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+            ResponseDto<String> responseDto
+                    = new ResponseDto<>(httpStatus.value(), "fail", "api-gateway 오류", errorMessage);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            // responseDto의 내용을 바이트 배열로 작성해주기
+            byte[] bytes = objectMapper.writeValueAsBytes(responseDto);
+
             // 바이트 배열을 databuffer형으로 래핑. (새로운 메모리 사용 x)
             DataBuffer dataBuffer = response.bufferFactory().wrap(bytes);
             // message body를 직접 적기 위해서 writeWith 사용
