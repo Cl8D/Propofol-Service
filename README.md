@@ -23,6 +23,7 @@
 - api-gateway (0425~)
     - 사용자의 JWT token 검증 + 인증된 사용자만 service 가능하도록
     - refresh token이 없을 경우 filter 거치지 않도록 수정
+    - Preflight 문제 해결을 위해 OPTIONS 허용 메서드 추가
 
 
 - discovery-server (0425~)
