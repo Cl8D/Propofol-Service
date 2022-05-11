@@ -14,18 +14,17 @@ public interface MemberService {
     // 이메일을 통해 멤버 조회
     Member getMemberByEmail(String email);
 
-    // 닉네임, 이메일을 통해 회원 중복 조회 체크
-    Boolean checkDuplicateByNickname(String nickname);
-    Boolean checkDuplicateByEmail(String email);
-
     // 회원가입 로직
     void saveMember(Member member);
 
     // 회원 정보 수정 로직
     void updateMember(UpdateMemberDto updateMemberDto, Long id);
 
-    // 회원 존재 여부 확인 (Oauth 사용자)
+    // 이메일 존재 여부 확인 (Oauth 사용자) + 중복 체크
     Boolean isExistByEmail(String email);
+
+    // 닉네임 존재 여부 확인 (중복 체크_
+    Boolean isExistByNickname(String nickname);
 
     // 비밀번호 변경
     void updatePassword(String email, String password);

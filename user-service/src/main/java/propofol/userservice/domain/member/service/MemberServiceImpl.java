@@ -44,26 +44,6 @@ public class MemberServiceImpl implements MemberService{
 
     /*****************/
 
-    // 닉네임을 통해 멤버 조회
-    @Override
-    public Boolean checkDuplicateByNickname(String nickname) {
-        // 이미 멤버가 존재한다면 true, 없으면 false
-        Member findMember = memberRepository.findDuplicateByNickname(nickname);
-        if(findMember == null) return false;
-        return true;
-    }
-
-    /*****************/
-
-    // 이메일로 회원 중복 여부 체크
-    @Override
-    public Boolean checkDuplicateByEmail(String email) {
-        Member findMember = memberRepository.findDuplicateByEmail(email);
-        if(findMember == null) return false;
-        return true;
-    }
-
-    /*****************/
 
     // 회원 가입 - db에 저장
     @Override
@@ -102,6 +82,14 @@ public class MemberServiceImpl implements MemberService{
     public Boolean isExistByEmail(String email) {
         Member findMember = memberRepository.findExistByEmail(email);
         // 회원이 null이면 신규 유저니까 false, 기존에 존재한다면 true 리턴
+        return findMember == null ? false : true;
+    }
+
+    /*****************/
+    // 닉네임 존재 여부 체크
+    @Override
+    public Boolean isExistByNickname(String nickname) {
+        Member findMember = memberRepository.findExistByNickname(nickname);
         return findMember == null ? false : true;
     }
 
