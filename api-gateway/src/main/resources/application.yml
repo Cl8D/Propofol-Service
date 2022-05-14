@@ -60,6 +60,7 @@ spring:
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
 
         # Til-service Routing
+        # (board Service)
         - id: til-service
           uri: lb://TIL-SERVICE
           predicates:
@@ -68,6 +69,17 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - JwtFilter
+            - RewritePath=/til-service/(?<segment>.*), /$\{segment}
+
+        # (image Service)
+        - id: til-service
+          uri: lb://TIL-SERVICE
+          predicates:
+            - Path=/til-service/api/v1/images/**
+            - Method=GET, POST, PUT, PATCH, DELETE
+          filters:
+            - RemoveRequestHeader=Cookie
+#            - JwtFilter
             - RewritePath=/til-service/(?<segment>.*), /$\{segment}
 
 
