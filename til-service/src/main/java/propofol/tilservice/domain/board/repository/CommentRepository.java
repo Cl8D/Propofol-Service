@@ -22,4 +22,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Modifying
     @Query("delete from Comment c where c.board.id=:boardId")
     int deleteBulkComments(@Param("boardId") Long boardId);
+
+
+    // 댓글 개수 조회
+    @Query("select count(c) from Comment c where c.board.id=:boardId")
+    int getCommentCount(@Param("boardId") Long boardId);
 }
