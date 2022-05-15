@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import propofol.tilservice.domain.board.BaseEntity;
-import propofol.tilservice.domain.file.entity.Image;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -46,18 +45,20 @@ public class Board extends BaseEntity {
     // 여기서 cascade 옵션을 사용하였는데,
     // 이러면 영속성 객체에 수행하는 행동이 자식까지 전파된다.
     // 즉, 여기서는 board 객체가 변경감지에 의해 체크되면 image도 함께 변경되는 것.
-    @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST)
-    List<Image> images = new ArrayList<>();
+    /** 이미지 저장 방식 처리 변경으로 인한 코드 삭제 */
+//    @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST)
+//    List<Image> images = new ArrayList<>();
 
 
     // 하나의 게시글에는 여러 개의 댓글이 달릴 수 있다.
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST)
     List<Comment> comments = new ArrayList<>();
 
-    public void addImage(Image image) {
-        images.add(image);
-        image.addBoard(this);
-    }
+//    public void addImage(Image image) {
+//        images.add(image);
+//        image.addBoard(this);
+//    }
 
     // 빌더 생성
     @Builder(builderMethodName = "createBoard")

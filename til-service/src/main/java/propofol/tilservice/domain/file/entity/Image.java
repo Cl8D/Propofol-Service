@@ -25,11 +25,12 @@ public class Image {
     // 타입
     private String contentType;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id", updatable = false)
+    @JoinColumn(name = "board_id")
     private Board board;
 
-    public void addBoard(Board board) {
+    public void changeBoard(Board board) {
         this.board = board;
     }
 
