@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import propofol.userservice.api.member.controller.dto.StreakRequestDto;
+import propofol.userservice.api.member.controller.dto.streak.StreakRequestDto;
 import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.service.MemberService;
