@@ -7,7 +7,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
-import propofol.userservice.api.member.controller.dto.MemberBoardsResponseDto;
+import propofol.userservice.api.member.controller.dto.board.MemberBoardsResponseDto;
+
+import java.util.Optional;
 
 // user-service -> til-service에게 정보를 요청하기 위해 만든 구현체.
 // 이때, discovery-server가 있으면 url을 따로 지정해줄 필요 없이 eureka에 올라온 application-name을 지정해주면 된다.
@@ -19,7 +21,7 @@ public interface TilServiceFeignClient {
     // axios와 비슷한 느낌이다. GET으로 요청.
     // 해당 유저가 쓴 글 목록을 요청한다.
     @GetMapping("/api/v1/boards/myBoards")
-    MemberBoardsResponseDto getMyBoards(
+    Optional<MemberBoardsResponseDto> getMyBoards(
             // 서비스 계층에서 넘어온 token 값을 http의 Authorization 헤더에 넣어준다.
             @RequestHeader(name = "Authorization", required = true) String token,
             // 페이지 정보는 쿼리 파라미터로 함께 넘겨준다.
