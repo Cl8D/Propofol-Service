@@ -129,6 +129,31 @@ public class JwtProvider {
 
     /*************************/
 
+    // JWT 재발급 함수 새로 추가!
+    // 기존의 JWT 발급에서는 authentication을 파라미터로 받았지만,
+    // 여기서는 memberId와 memberRole을 받아준다.
+    public TokenDto createReJwt(String memberId, String memberRole) {
+        Date expirationDate = new Date(System.currentTimeMillis()
+                + Long.parseLong(jwtProperties.getExpirationTime()));
+
+        String token = Jwts.builder()
+                // 기존은 authentication.getName()이었으나 여기서는 memberId 직접 넣어주기
+                .setSubject(memberId)
+                // 마찬가지로 memberRole을 직접적으로 넣어주었다.
+                .claim("role", memberRole)
+                .setExpiration(expirationDate)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+
+        return TokenDto.createTokenDto()
+                .type(jwtProperties.getType())
+                .accessToken(token)
+                .refreshToken(createRefreshToken())
+                .build();
+    }
+
+
+    /*************************/
     // refresh-token 생성 함수
     public String createRefreshToken() {
         // refresh-token의 유효기간 설정 = 하루(config에서 읽어온 정보)
@@ -139,6 +164,14 @@ public class JwtProvider {
                 .setExpiration(refreshExpirationTime)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    /*************************/
+    // token 정보로 userId 가져오기
+    public String getUserId(String token) {
+        JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
+        Claims claims = jwtParser.parseClaimsJws(token).getBody();
+        return claims.getSubject();
     }
 
     /*************************/
@@ -176,7 +209,7 @@ public class JwtProvider {
             // 토큰 검증
             JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
 
-            // jws = 서명된 jwt (키를 통해서 만들어진)
+            // jws = 서명된 jwt (키를 통해서 만들어진)!!
             Claims claims = jwtParser.parseClaimsJws(token).getBody();
 
             // 토큰의 만료기간이 현재 날짜보다 더 이전이라면 = 만료되었음
