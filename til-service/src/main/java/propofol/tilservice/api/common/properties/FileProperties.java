@@ -9,11 +9,9 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 @ConfigurationProperties(prefix="file")
 @ConstructorBinding
 public class FileProperties {
-    private final String profileDir;
     private final String boardDir;
 
     public FileProperties(String profileDir, String boardDir) {
-        this.profileDir = profileDir;
         this.boardDir = boardDir;
     }
 }
