@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -42,8 +41,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 요청에 대한 권한 지정
                 .authorizeHttpRequests()
                 // 모든 경로에 대해 인증 필요함 (블로그 서비스는 꼭 로그인된 유저만 사용할 수 있으니까)
-                .antMatchers("/api/v1/**")
+                /** 임시로 images 처리만 권한 필요없도록 설정*/
+                .antMatchers("/api/v1/boards")
                 .authenticated()
+                .anyRequest().permitAll()
                 .and()
                 // 커스텀 필터 추가 - 무조건 prefilter를 거치게 되고, Authentication 객체가 만들어진다
                 .addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class);
