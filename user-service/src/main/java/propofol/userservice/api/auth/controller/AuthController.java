@@ -4,9 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,18 +11,17 @@ import propofol.userservice.api.auth.controller.dto.*;
 import propofol.userservice.api.auth.service.AuthService;
 import propofol.userservice.api.common.exception.DuplicateEmailException;
 import propofol.userservice.api.common.exception.DuplicateNicknameException;
-import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
+import propofol.userservice.api.common.exception.NotExpiredAccessTokenException;
+import propofol.userservice.api.common.exception.ReCreateJwtException;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
 import propofol.userservice.api.common.jwt.JwtProvider;
 import propofol.userservice.api.common.jwt.TokenDto;
-import propofol.userservice.api.member.controller.dto.SaveMemberDto;
+import propofol.userservice.api.member.controller.dto.member.SaveMemberDto;
 import propofol.userservice.domain.member.entity.Authority;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.service.MemberService;
 
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 // 일반 로그인 관리
 @RestController
@@ -38,21 +34,6 @@ public class AuthController {
     private final MemberService memberService;
     private final BCryptPasswordEncoder encoder;
     private final JwtProvider jwtProvider;
-
-
-    /****************/
-    // 이메일, 닉네임 중복 체크 분리
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseDto duplicateEmailException(DuplicateEmailException e){
-        return new ResponseDto(HttpStatus.BAD_REQUEST.value(), "fail", "중복 오류", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseDto duplicateNicknameException(DuplicateNicknameException e){
-        return new ResponseDto(HttpStatus.BAD_REQUEST.value(), "fail", "중복 오류", e.getMessage());
-    }
 
     /***************/
 
@@ -158,27 +139,33 @@ public class AuthController {
         // access-token이 만료되었는지 확인
         // 만약 아직 JWT가 유효하다면
         if(jwtProvider.isJwtValid(token)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "토큰 재발급 실패(JWT 유효)", "valid access-token");
+            throw new NotExpiredAccessTokenException("Valid Access Token");
         }
-
 
         // Refresh-token의 유효시간이 지나지 않았는지 확인
         // + DB에 저장된 refresh-token과 일치하는지 확인
         if(jwtProvider.isRefreshTokenValid(refreshToken) &&
                 findMember.getRefreshToken().equals(refreshToken)) {
+
+            /** 기존 코드에서는 토큰 재생성 시 시큐리티 컨텍스트에서 get으로 통해 Authentication을 뽑아왔었는데,
+             * preFilter에서는 refreshToken이 null이어야 authentication을 만들어준다.
+             * 그러나 여기서는 클라이언트가 refreshToken을 함께 전송해주기 때문에
+             * preFilter를 거칠 때 authentication 객체를 만들지 않은 상태가 되어서 유저에 대한 정보를 뽑아오지 못하게 된다...!
+             * 그래서 로직을 완전히 수정하였음!*/
+
+//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//            TokenDto tokenDto = jwtProvider.createJwt(authentication);
             // 토큰 재생성
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            TokenDto tokenDto = jwtProvider.createJwt(authentication);
+            TokenDto tokenDto = jwtProvider.createReJwt(String.valueOf(findMember.getId()),
+                    findMember.getAuthority().toString());
+
             memberService.changeRefreshToken(findMember, refreshToken);
-            /** TODO 프로젝트 오타 발견 - 수정 필요 */
             return new ResponseDto<>(HttpStatus.OK.value(), "success", "토큰 재발급 성공!", tokenDto);
 
         }
         // 아니라면 에러.
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail",
-                "토큰 재발급 실패!", "Please Re-login!!!!");
+        throw new ReCreateJwtException("Please Re-Login");
     }
 
 }
