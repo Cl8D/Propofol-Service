@@ -29,23 +29,31 @@ public class PreFilter extends OncePerRequestFilter {
     // 위임받으면 순서대로 filter를 실행시켜준다.
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorization = request.getHeader("Authorization");
 
-        // jwt 토큰이 담겨있고 bearer + 형식으로 시작한다면
-        if(authorization != null && authorization.startsWith("Bearer ")) {
-            // 순수 jwt token 뽑기
-            String token = authorization.replaceAll("Bearer ", "").toString();
-            // 토큰 검증을 통해 사용자 찾기
-            // 이러면 사용자의 pricinpal / credential 정보를 Authentication 객체에 담고,
-            // 이를 SecurityContext에 보관하게 되는데, 이를 또 SecurityContextHolder에 보관한다고 한다.
-            Authentication authentication = jwtProvider.getUserInfo(token);
+        /** 임시로 image 생성 시 jwt 검증 안하도록 (테스트 때문에) */
+        String requestURI = request.getRequestURI();
+        if(requestURI.contains("api/v1/images"))
+            filterChain.doFilter(request, response);
 
-            // 홀더에 있는 context를 강제로 뽑아서 authentication 객체를 위에서 리턴받은 객체로 설정해주기.
-            // cf) https://flyburi.com/584
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        else {
+            String authorization = request.getHeader("Authorization");
+
+            // jwt 토큰이 담겨있고 bearer + 형식으로 시작한다면
+            if (authorization != null && authorization.startsWith("Bearer ")) {
+                // 순수 jwt token 뽑기
+                String token = authorization.replaceAll("Bearer ", "").toString();
+                // 토큰 검증을 통해 사용자 찾기
+                // 이러면 사용자의 pricinpal / credential 정보를 Authentication 객체에 담고,
+                // 이를 SecurityContext에 보관하게 되는데, 이를 또 SecurityContextHolder에 보관한다고 한다.
+                Authentication authentication = jwtProvider.getUserInfo(token);
+
+                // 홀더에 있는 context를 강제로 뽑아서 authentication 객체를 위에서 리턴받은 객체로 설정해주기.
+                // cf) https://flyburi.com/584
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+
+            // request-response가 체인을 따라서 다음 필터로 이동
+            filterChain.doFilter(request, response);
         }
-
-        // request-response가 체인을 따라서 다음 필터로 이동
-        filterChain.doFilter(request, response);
     }
 }
