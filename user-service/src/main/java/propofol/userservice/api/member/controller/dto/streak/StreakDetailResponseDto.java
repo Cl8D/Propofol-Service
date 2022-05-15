@@ -1,4 +1,4 @@
-package propofol.userservice.api.member.controller.dto;
+package propofol.userservice.api.member.controller.dto.streak;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

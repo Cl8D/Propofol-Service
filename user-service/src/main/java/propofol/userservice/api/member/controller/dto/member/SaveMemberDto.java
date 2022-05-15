@@ -1,16 +1,11 @@
-package propofol.userservice.api.member.controller.dto;
+package propofol.userservice.api.member.controller.dto.member;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.tomcat.jni.Local;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-import java.time.LocalDate;
-import java.util.Date;
 
 // 회원가입 Dto
 @Data

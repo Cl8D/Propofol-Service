@@ -1,4 +1,4 @@
-package propofol.userservice.api.member.controller.dto;
+package propofol.userservice.api.member.controller.dto.board;
 
 // 멤버가 쓴 게시글에 대한 정보 Dto
 

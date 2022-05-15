@@ -1,7 +1,8 @@
-package propofol.userservice.api.member.controller.dto;
+package propofol.userservice.api.member.controller.dto.streak;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import propofol.userservice.api.member.controller.dto.streak.StreakDetailResponseDto;
 
 import java.util.ArrayList;
 import java.util.List;
