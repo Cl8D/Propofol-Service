@@ -8,12 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import propofol.userservice.api.auth.controller.dto.ResponseDto;
-import propofol.userservice.api.common.exception.ExpiredRefreshTokenException;
+import propofol.userservice.api.common.exception.*;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
 import propofol.userservice.domain.exception.NotFoundMember;
 
-import javax.validation.ConstraintViolationException;
 
 // 자체 Exception 처리
 @RestControllerAdvice
@@ -24,10 +23,10 @@ public class ExceptionAdviceController {
     @ExceptionHandler
     // status를 설정할 수 있다.
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    // SQL 에러가 발생했을 때
-    public ErrorDto SQLException(ConstraintViolationException e){
-        log.info("Message = {}", e.getMessage());
-        return null;
+    // 그외 예외는 전부 여기서 처리
+    public ResponseDto Exception(Exception e){
+        ErrorDto errorDto = createError(e.getMessage());
+        return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "오류", errorDto);
     }
 
     /******************/
@@ -86,6 +85,48 @@ public class ExceptionAdviceController {
 
     }
     /******************/
+
+    // 이메일, 닉네임 중복 체크
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto duplicateEmailException(DuplicateEmailException e){
+        return new ResponseDto(HttpStatus.BAD_REQUEST.value(), "fail", "중복 오류", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto duplicateNicknameException(DuplicateNicknameException e){
+        return new ResponseDto(HttpStatus.BAD_REQUEST.value(), "fail", "중복 오류", e.getMessage());
+    }
+
+    /**********************/
+
+    // JWT 토큰 관련 예외
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto NotExpiredAccessTokenException(NotExpiredAccessTokenException e){
+        return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail",
+                "토큰 재발급 실패", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto ReCreateJwtException(ReCreateJwtException e){
+        return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail",
+                "토큰 재발급 실패", e.getMessage());
+    }
+
+
+    /****************/
+
+    // 사용자 프로필 저장 실패 예외
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto saveProfileException(SaveProfileException e){
+        return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "프로필 저장 실패", e.getMessage());
+    }
+
+    /**************/
 
     private ErrorDto createError(String errorMessage) {
         ErrorDto errorDto = new ErrorDto();
