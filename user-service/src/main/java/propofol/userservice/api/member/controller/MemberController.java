@@ -5,10 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import propofol.userservice.api.auth.controller.dto.ResponseDto;
 import propofol.userservice.api.common.annotation.Token;
-import propofol.userservice.api.member.controller.dto.*;
+import propofol.userservice.api.member.controller.dto.member.MemberResponseDto;
+import propofol.userservice.api.member.controller.dto.member.ProfileResponseDto;
+import propofol.userservice.api.member.controller.dto.member.UpdateRequestDto;
+import propofol.userservice.api.member.controller.dto.streak.StreakDetailResponseDto;
+import propofol.userservice.api.member.controller.dto.streak.StreakRequestDto;
+import propofol.userservice.api.member.controller.dto.streak.StreakResponseDto;
 import propofol.userservice.api.member.service.MemberBoardService;
+import propofol.userservice.api.member.service.ProfileService;
 import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
 import propofol.userservice.domain.member.service.MemberService;
@@ -31,11 +38,13 @@ public class MemberController {
     private final ModelMapper modelMapper;
     private final MemberBoardService memberBoardService;
     private final StreakService streakService;
+    private final ProfileService profileService;
+//    private final FollowingService followingService;
 
     /**************************/
 
     // 이메일로 멤버 조회하기 (x)
-    // + 기존 코드에서 업그레이드 -> @Token 어노테이션을 통해서 회원을 찾을 수 있도록!
+    /** 기존 코드에서 업그레이드 -> @Token 어노테이션을 통해서 회원을 찾을 수 있도록! */
 //    @GetMapping("/users/{email}")
 //    public MemberResponseDto getMemberByEmail(@PathVariable String email) {
     @GetMapping
@@ -135,5 +144,63 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.OK.value(), "success",
                 "회원 스트릭 저장 성공!", "ok");
     }
+
+    /*******************/
+
+    // 회원의 닉네임 반환 (til-service에서 호출)
+    @GetMapping("/{memberId}")
+    @ResponseStatus(HttpStatus.OK)
+    public String getMemberNickname(@PathVariable("memberId") Long memberId) {
+        Member findMember = memberService.getMemberById(memberId).orElseThrow(() -> {
+            throw new NotFoundMember("회원 조회에 실패하였습니다.");
+        });
+
+        return findMember.getNickname();
+    }
+
+    /*******************/
+
+    // 회원 프로필 수정 (저장)
+    @PostMapping("/profile")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto saveMemberProfile(
+            // 사용자의 프로필 이미지
+            @RequestParam("profile")MultipartFile file,
+            @Token Long memberId) throws Exception {
+
+        Member findMember = memberService.getMemberById(memberId).orElseThrow(() -> {
+            throw new NotFoundMember("회원을 찾을 수 없습니다.");
+        });
+
+        ProfileResponseDto profileResponseDto = profileService.saveProfile(file, findMember);
+
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "프로필 저장 성공", profileResponseDto);
+    }
+
+    /*******************/
+
+    // 회원 프로필 조회
+    @GetMapping("/profile")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getMemberProfile(@Token Long memberId) {
+        return new ResponseDto<>(HttpStatus.OK.value(), "success",
+                "프로필 조회 성공", profileService.getProfile(memberId));
+    }
+
+
+    /*******************/
+    // 회원의 팔로잉 정보 저장
+//    @PostMapping("/following")
+//    @ResponseStatus(HttpStatus.OK)
+//    public ResponseDto saveFollowing(@RequestBody FollowingSaveRequestDto requestDto,
+//                                     @Token Long memberId){
+//        Member findMember = memberService.getMemberById(memberId).orElseThrow(() -> {
+//            throw new NotFoundMember("회원을 찾을 수 없습니다.");
+//        });
+//
+//        return new ResponseDto(HttpStatus.OK.value(), "success", "Following 성공!",
+//                followingService.saveFollowing(findMember, Long.parseLong(requestDto.getFollowingMemberId())));
+//    }
 
 }
