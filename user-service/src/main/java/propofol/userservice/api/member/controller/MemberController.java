@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import propofol.userservice.api.auth.controller.dto.ResponseDto;
 import propofol.userservice.api.common.annotation.Token;
+import propofol.userservice.api.member.controller.dto.member.FollowingSaveRequestDto;
 import propofol.userservice.api.member.controller.dto.member.MemberResponseDto;
 import propofol.userservice.api.member.controller.dto.member.ProfileResponseDto;
 import propofol.userservice.api.member.controller.dto.member.UpdateRequestDto;
@@ -18,6 +19,7 @@ import propofol.userservice.api.member.service.MemberBoardService;
 import propofol.userservice.api.member.service.ProfileService;
 import propofol.userservice.domain.exception.NotFoundMember;
 import propofol.userservice.domain.member.entity.Member;
+import propofol.userservice.domain.member.service.FollowingService;
 import propofol.userservice.domain.member.service.MemberService;
 import propofol.userservice.domain.member.service.dto.UpdateMemberDto;
 import propofol.userservice.domain.streak.entity.Streak;
@@ -39,7 +41,7 @@ public class MemberController {
     private final MemberBoardService memberBoardService;
     private final StreakService streakService;
     private final ProfileService profileService;
-//    private final FollowingService followingService;
+    private final FollowingService followingService;
 
     /**************************/
 
@@ -191,16 +193,26 @@ public class MemberController {
 
     /*******************/
     // 회원의 팔로잉 정보 저장
-//    @PostMapping("/following")
-//    @ResponseStatus(HttpStatus.OK)
-//    public ResponseDto saveFollowing(@RequestBody FollowingSaveRequestDto requestDto,
-//                                     @Token Long memberId){
-//        Member findMember = memberService.getMemberById(memberId).orElseThrow(() -> {
-//            throw new NotFoundMember("회원을 찾을 수 없습니다.");
-//        });
-//
-//        return new ResponseDto(HttpStatus.OK.value(), "success", "Following 성공!",
-//                followingService.saveFollowing(findMember, Long.parseLong(requestDto.getFollowingMemberId())));
-//    }
+    @PostMapping("/following")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto saveFollowing(@RequestBody FollowingSaveRequestDto requestDto,
+                                     @Token Long memberId){
+        Member findMember = memberService.getMemberById(memberId).orElseThrow(() -> {
+            throw new NotFoundMember("회원을 찾을 수 없습니다.");
+        });
+
+        return new ResponseDto(HttpStatus.OK.value(), "success", "Following 성공!",
+                followingService.saveFollowing(findMember, requestDto.getFollowingMemberId()));
+    }
+
+    /*******************/
+
+    // 회원 팔로잉 조회
+    @GetMapping("/follower")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto getFollowers(@Token Long memberId) {
+        return new ResponseDto(HttpStatus.OK.value(), "success",
+                "팔로우 조회 성공", followingService.getFollowers(memberId));
+    }
 
 }
