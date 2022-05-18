@@ -11,6 +11,7 @@ import propofol.userservice.api.auth.controller.dto.ResponseDto;
 import propofol.userservice.api.common.exception.*;
 import propofol.userservice.api.common.exception.dto.ErrorDto;
 import propofol.userservice.api.common.exception.dto.ErrorDetailDto;
+import propofol.userservice.domain.exception.ExistFollowingException;
 import propofol.userservice.domain.exception.NotFoundMember;
 
 
@@ -127,6 +128,16 @@ public class ExceptionAdviceController {
     }
 
     /**************/
+
+    // 팔로잉 실패 예외
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto existFollowingException(ExistFollowingException e){
+        return new ResponseDto<>(HttpStatus.BAD_REQUEST.value(), "fail", "팔로잉 실패", e.getMessage());
+    }
+
+
+    /****************/
 
     private ErrorDto createError(String errorMessage) {
         ErrorDto errorDto = new ErrorDto();
