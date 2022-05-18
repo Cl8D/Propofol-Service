@@ -7,7 +7,5 @@ import lombok.Data;
 public class UpdateRequestDto {
     private String password;
     private String nickname;
-    private String score;
-    private String degree;
     private String phoneNumber;
 }

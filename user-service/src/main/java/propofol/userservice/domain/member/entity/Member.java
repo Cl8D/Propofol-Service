@@ -60,18 +60,12 @@ public class Member extends BaseEntity{
     }
 
     // 회원 정보 수정 - setter를 막았기 때문에 이런 식으로 업데이트를 해줘야 한다.
-    public void update(String nickname, String password, String score, String degree, String phoneNumber) {
+    public void update(String nickname, String password, String phoneNumber) {
         if(nickname!= null)
             this.nickname = nickname;
 
         if(password != null)
             this.password = password;
-
-        if(score!= null)
-            this.score = score;
-
-        if(degree != null)
-            this.degree = degree;
 
         if(phoneNumber != null)
             this.phoneNumber = phoneNumber;
