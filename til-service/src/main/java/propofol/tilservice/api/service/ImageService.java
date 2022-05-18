@@ -71,7 +71,7 @@ public class ImageService {
 //        Path relativePath = Paths.get("");
 //        // 상대경로 -> 절대경로로 변경한 이후, 새로운 디렉토리를 만들기 위해 uploadDir 붙여주기.
 //        String path = relativePath.toAbsolutePath().toString() + "/" + uploadDir;
-        String path = findBoardPath();
+        String path = findBoardPath(getUploadDir());
         // 위에서 지정한 경로로 디렉토리 생성해주기 (부모 디렉토리)
         File parentFolder = new File(path);
 
@@ -121,7 +121,7 @@ public class ImageService {
      * 이때 src에 dto 관련 정보가 들어가면 브라우저 상에서 막히게 되는 것!*/
     public byte[] getImageBytes(String fileName) {
         // 게시글에 대한 경로 지정
-        String path = findBoardPath();
+        String path = findBoardPath(getUploadDir());
         byte[] bytes = null;
 
         // FileInputStream -> 파일로부터 바이트로 입력받아서, 바이트 단위로 출력할 수 있는 클래스.
@@ -194,14 +194,20 @@ public class ImageService {
 
     /******************************/
 
+    // 업로드할 디렉토리 경로 리턴
+    public String getUploadDir() {
+        // 프로퍼티에 저장된 디렉토리 이름!
+        return fileProperties.getBoardDir();
+    }
+
+    /******************************/
+
     // 게시글에 대한 경로 가져오기
-    public String findBoardPath() {
-        // 업로드할 디렉토리 경로.
-        String uploadDir = fileProperties.getBoardDir();
+    public String findBoardPath(String dir) {
         // 현재 디렉토리의 상대 경로
         Path relativePath = Paths.get("");
-        // 절대 경로로 변경
-        String path = relativePath.toAbsolutePath().toString() + "/" + uploadDir;
+        // 절대 경로로 변경 (파라미터로 dir 받아서 접근)
+        String path = relativePath.toAbsolutePath().toString() + "/" + dir;
         return path;
     }
 
@@ -252,7 +258,7 @@ public class ImageService {
 
     // 게시글 목록 보여줄 때 대표 이미지(썸네일) 뽑는 함수
     public Image getTopImage(Long boardId) {
-        return imageRepository.findTopByBoardId(boardId).get();
+        return imageRepository.findTopByBoardId(boardId).orElse(null);
     }
 
     /******************************/
@@ -284,10 +290,11 @@ public class ImageService {
     }
 
     /******************************/
+
     // 게시글 삭제 시 이미지 벌크 삭제
-//    @Transactional
-//    public void deleteImages(Long boardId) {
-//        imageRepository.deleteBulkImages(boardId);
-//    }
+    @Transactional
+    public void deleteImages(Long boardId) {
+        imageRepository.deleteImages(boardId);
+    }
 
 }
