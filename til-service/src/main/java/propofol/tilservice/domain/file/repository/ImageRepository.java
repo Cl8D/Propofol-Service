@@ -17,12 +17,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 //    @Query("select i from Image i where i.board.id =:boardId")
 //    List<Image> findImages(@Param(value = "boardId") Long boardId);
 
-    // 이미지 벌크 삭제
-//    @Modifying
-//    @Query("delete from Image i where i.board.id=:boardId")
-//    int deleteBulkImages(@Param(value = "boardId") Long boardId);
-
-
     // 서버 저장 파일 이름으로 이미지 찾기
 //    Image findImageByStoreFileName(String storeFileName);
 
@@ -45,4 +39,11 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     // 게시글에 존재하는 이미지 목록 전부 가져오기
     List<Image> findAllByBoardId(Long boardId);
+
+    /****************/
+
+    // 이미지 벌크 삭제
+    @Modifying(clearAutomatically = true)
+    @Query("delete from Image i where i.board.id =:boardId")
+    void deleteImages(@Param("boardId") Long boardId);
 }
