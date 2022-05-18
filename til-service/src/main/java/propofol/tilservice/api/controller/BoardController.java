@@ -339,8 +339,12 @@ public class BoardController {
                                       @Validated @RequestBody CommentRequestDto requestDto,
                                       @Token String memberId,
                                       @Jwt String token) {
+        // DTO를 리턴하도록 수정 (안 하면 무한참조 걸림! - 엔티티를 직접 접근하는 일은 없어야 한다!)
+        Comment comment = commentService.saveParentComment(requestDto, boardId, token, memberId);
+        CommentResponseDto responseDto  = modelMapper.map(comment, CommentResponseDto.class);
+
         return new ResponseDto<>(HttpStatus.OK.value(), "success",
-                "댓글 생성 성공!", commentService.saveParentComment(requestDto, boardId, token, memberId));
+                "댓글 생성 성공!", responseDto);
     }
 
     // 자식 댓글 (대댓글, 하나의 부모 댓글에 대해 여러 자식 댓글이 달린다.)
@@ -352,8 +356,12 @@ public class BoardController {
                                      @Validated @RequestBody CommentRequestDto requestDto,
                                      @Token String memberId,
                                      @Jwt String token) {
+
+        Comment comment = commentService.saveChildComment(requestDto, boardId, parentId, token, memberId);
+        CommentResponseDto responseDto  = modelMapper.map(comment, CommentResponseDto.class);
+
         return new ResponseDto<>(HttpStatus.OK.value(), "success",
-                "대댓글 생성 성공!", commentService.saveChildComment(requestDto, boardId, parentId, token, memberId));
+                "대댓글 생성 성공!", responseDto);
     }
 
     /*********************/

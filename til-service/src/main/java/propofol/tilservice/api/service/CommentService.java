@@ -54,7 +54,7 @@ public class CommentService {
 
     // 자식 댓글 (대댓글) 저장
     @Transactional
-    public String saveChildComment(CommentRequestDto commentDto, Long boardId, Long parentId, String token, String memberId) {
+    public Comment saveChildComment(CommentRequestDto commentDto, Long boardId, Long parentId, String token, String memberId) {
         Board findBoard = boardRepository.findById(boardId).orElseThrow(() -> {
             throw new NotFoundBoardException("게시글을 찾을 수 없습니다.");
         });
@@ -69,7 +69,7 @@ public class CommentService {
 
         // 자식 댓글의 groupId는 parent의 Id를 그대로 따르도록!
         comment.addGroupInfo(parentId);
-        commentRepository.save(comment);
+        return commentRepository.save(comment);
 //        // 부모 댓글 가져오기 (최상위 계층 댓글)
 //        Comment parentComment = commentRepository.findById(parentId).orElseThrow(() -> {
 //            throw new NotFoundCommentException("댓글을 찾을 수 없습니다.");
@@ -78,7 +78,6 @@ public class CommentService {
 //        comment.setParent(parentComment);
 //        // board를 수정하면 변경감지 > cascade에 의해 하위 타입인 comment도 함께 업데이트!
 //        findBoard.addComment(comment);
-        return "ok";
     }
 
     /******************/
