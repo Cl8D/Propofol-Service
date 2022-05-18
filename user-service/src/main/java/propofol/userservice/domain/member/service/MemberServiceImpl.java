@@ -62,9 +62,7 @@ public class MemberServiceImpl implements MemberService{
         });
 
         String password = dto.getPassword();
-        String degree = dto.getDegree();
         String nickname = dto.getNickname();
-        String score = dto.getScore();
         String phoneNumber = dto.getPhoneNumber();
 
         // 패스워드 암호화
@@ -72,7 +70,7 @@ public class MemberServiceImpl implements MemberService{
             password = encoder.encode(password);
         }
 
-        findMember.update(nickname, password, score, degree, phoneNumber);
+        findMember.update(nickname, password, phoneNumber);
 
     }
 
