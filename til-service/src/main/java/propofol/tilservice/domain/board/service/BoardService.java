@@ -14,8 +14,12 @@ import propofol.tilservice.domain.board.repository.CommentRepository;
 import propofol.tilservice.domain.board.repository.RecommendRepository;
 import propofol.tilservice.domain.board.service.dto.BoardDto;
 import propofol.tilservice.domain.exception.NotFoundBoardException;
+import propofol.tilservice.domain.file.entity.Image;
 import propofol.tilservice.domain.file.repository.ImageRepository;
 import propofol.tilservice.api.service.ImageService;
+
+import java.io.File;
+import java.util.List;
 
 
 @Slf4j
@@ -42,6 +46,8 @@ public class BoardService {
     /*********************/
 
     // 게시판 글 쓰기
+    // 여러 트랜잭션을 걸칠 때는 하나의 트랜잭션에 장애가 발생할 수 있어서, 웬만하면 transactional을 붙여주자!
+    @Transactional
     public Board saveBoard(Board board) {
         // 게시글 저장
         return boardRepository.save(board);
@@ -91,30 +97,26 @@ public class BoardService {
         if(!findBoard.getCreatedBy().equals(memberId))
             throw new NotMatchMemberException("글 작성자만 삭제할 수 있습니다.");
 
-//        List<Image> images = findBoard.getImages();
-//
-//        // 게시글과 관련된 이미지들도 함께 삭제
-//        if(images.size() != 0) {
-//            imageRepository.deleteBulkImages(boardId);
-//
-//            // 로컬에 저장된 이미지 폴더들도 함께 삭제해주기
-//            // 이미지 저장 디렉토리 주소
-//            // 게시글에 대한 이미지가 있는지 판단하기 -> 있다면 디렉토리는 만들어져있을 것임
-//            File deleteFolder = new File(imageService.findBoardPath() + "/" + boardId);
-//
-//            if(deleteFolder.exists()) {
-//                // 해당 디렉토리에 있는 파일들 가져오기
-//                File[] files = deleteFolder.listFiles();
-//
-//                // 각각 삭제
-//                for (File file : files) {
-//                    file.delete();
-//                }
-//                // 폴더 역시 함께 삭제
-//                deleteFolder.delete();
-//            }
-//
-//        }
+        // 게시판에 저장된 이미지 리스트 가져오기
+        List<Image> findImages = imageService.getImagesByBoardId(boardId);
+
+        // 서버에 저장된 이미지 삭제
+        if(findImages != null) {
+            findImages.forEach(image -> {
+                // 저장된 이미지를 서버에서도 삭제하기 위해 파일 객체 만들어서 탐색해보기
+                File savedFile = new File(
+                        imageService.findBoardPath(imageService.getUploadDir()) + "/" +
+                                image.getStoreFileName());
+
+                // 저장된 파일을 발견했다면 삭제
+                if(savedFile.exists())
+                    savedFile.delete();
+            });
+
+            // DB에서도 삭제해주기
+            imageService.deleteImages(boardId);
+        }
+
 
         // 게시글 삭제 시 관련된 추천수 데이터도 함께 삭제해주기
         recommendRepository.deleteBulkRecommends(boardId);
