@@ -1,4 +1,4 @@
-package propofol.tagservice.api.common.properties;
+package propofol.tagservice.common.jwt;
 
 import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

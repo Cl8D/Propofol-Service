@@ -1,9 +1,9 @@
-package propofol.tagservice.api;//package propofol.tagservice.api;
+package propofol.tagservice;//package propofol.tagservice.api;
 //
 //import lombok.RequiredArgsConstructor;
 //import org.springframework.stereotype.Component;
 //import org.springframework.transaction.annotation.Transactional;
-//import propofol.tagservice.domain.tag.entity.Tag;
+//import propofol.tagservice.domain.Tag;
 //
 //import javax.annotation.PostConstruct;
 //import javax.persistence.EntityManager;

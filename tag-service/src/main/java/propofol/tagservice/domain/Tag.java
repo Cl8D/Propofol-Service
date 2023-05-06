@@ -1,12 +1,15 @@
-package propofol.tagservice.domain.tag.entity;
+package propofol.tagservice.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
-
-import javax.persistence.*;
 
 @Entity
 @Getter
@@ -21,12 +24,12 @@ public class Tag {
     @Column(unique = true)
     private String name;
 
-    public void changeTag(String tagName){
+    public void changeTag(final String tagName){
         this.name = tagName;
     }
 
     @Builder(builderMethodName = "createTag")
-    public Tag(String name) {
+    public Tag(final String name) {
         this.name = name;
     }
 }
